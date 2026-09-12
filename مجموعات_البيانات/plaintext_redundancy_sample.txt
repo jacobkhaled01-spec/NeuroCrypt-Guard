@@ -1,0 +1,13 @@
+=== عينة نصوص طبيعية لاختبار إخفاء التكرارات اللغوية (Language Redundancy Benchmark) ===
+الغرض: قياس قدرة شبكة التشفير Alice على طمس التكرارات والأنماط اللغوية مقارنة بـ AES-ECB و AES-CBC.
+
+[SAMPLE 1: REPETITIVE TEST PATTERN]
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+ABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABAB
+
+[SAMPLE 2: ENGLISH PLAINTEXT - HIGH REDUNDANCY]
+Cryptography is the practice and study of techniques for secure communication in the presence of adversarial third parties. Modern cryptography exists at the intersection of the disciplines of mathematics, computer science, information security, electrical engineering, digital signal processing, and physics. More specifically, cryptography is about constructing and analyzing protocols that prevent third parties or the public from reading private messages.
+
+[SAMPLE 3: ARABIC PLAINTEXT - HIGH REDUNDANCY]
+التشفير هو علم وفن حماية البيانات والمعلومات عن طريق تحويلها إلى صيغة غير قابلة للقراءة إلا لمن يملك مفتاح فك التشفير المصرح له. يهدف التشفير في أنظمة أمن المعلومات إلى تحقيق أربعة أركان أساسية: السرية، وسلامة البيانات، وإثبات الهوية، وعدم الإنكار. يتكامل الذكاء الاصطناعي اليوم مع أنظمة التشفير الحديثة لبناء بروتوكولات حماية ذاتية التكيف وقادرة على الصمود أمام هجمات القنوات الجانبية والتحليل التفاضلي.

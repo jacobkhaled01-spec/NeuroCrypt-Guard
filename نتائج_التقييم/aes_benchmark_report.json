@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-09-12T14:27:06",
+  "hardware_device": "cuda",
+  "data_size_mb": 4.0,
+  "aes_128": {
+    "enc_throughput_mb_s": 1017.01,
+    "dec_throughput_mb_s": 1708.53,
+    "enc_latency_us_per_block": 0.015,
+    "dec_latency_us_per_block": 0.009,
+    "total_time_sec": 0.0063
+  },
+  "neurocrypt_guard": {
+    "enc_throughput_mb_s": 3.17,
+    "dec_throughput_mb_s": 3.17,
+    "enc_latency_us_per_block": 0.601,
+    "dec_latency_us_per_block": 0.602,
+    "total_time_sec": 2.5221
+  }
+}

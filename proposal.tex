@@ -1,0 +1,186 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage[numerals=maghrib]{arabic}
+\setotherlanguage{english}
+
+% تعيين خطوط عربية متوافقة
+\newfontfamily\arabicfont[Script=Arabic]{Amiri}
+\newfontfamily\arabicfontsf[Script=Arabic]{Cairo}
+\setmainfont{Times New Roman}
+
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{hyperref}
+
+\definecolor{navyblue}{RGB}{31, 78, 121}
+\definecolor{lightblue}{RGB}{112, 160, 220}
+
+\begin{document}
+
+% ------------------ الصفحة 1: الغلاف ------------------
+\thispagestyle{empty}
+\begin{center}
+\begin{tabularx}{\textwidth}{XrX}
+\begin{center}
+\includegraphics[width=2.2cm]{assets/logo_ibb_clean.png}\\
+\textbf{كلية: الحاسبات والعلوم التطبيقية}\\
+\textbf{القسم: علوم الحاسوب وتقنية المعلومات}\\
+\textbf{مستوى: رابع}
+\end{center}
+& &
+\begin{center}
+\includegraphics[width=2.5cm]{assets/logo_yemen_clean.png}\\
+\textbf{الجمهورية اليمنية}\\
+\textbf{وزارة التعليم العالي والبحث العلمي}\\
+\textbf{جامعة إب}
+\end{center}
+\end{tabularx}
+
+\vspace{4cm}
+{\Large\bfseries\color{navyblue} مقترح مشروع مقرر التشفير - Cryptography Course Project Proposal}
+
+\vspace{2cm}
+\begin{english}
+\begin{flushleft}
+{\LARGE\bfseries\color{navyblue} NeuroCrypt-Guard:}\\
+\vspace{0.2cm}
+{\large\bfseries\color{navyblue} An Adversarial Neural Cryptography Framework Resilient to Differential and Fault-Injection Attacks}
+\end{flushleft}
+\end{english}
+
+\vspace{0.5cm}
+{\Large\bfseries\color{navyblue} نيوروكربت-جارد: إطار تشفير عصبي تنافسي ذاتي التكيف مقاوم للهجمات التفاضلية وحقن الأخطاء}
+
+\vfill
+{\large\bfseries العام الجامعي: 2026/2027}
+\end{center}
+
+\newpage
+
+% ------------------ الصفحة 2: المشكلة والأهداف ------------------
+\section*{1. عنوان المشروع}
+\begin{english}
+\textbf{NeuroCrypt-Guard: An Adversarial Neural Cryptography Framework Resilient to Differential and Fault-Injection Attacks}
+\end{english}\\
+\textbf{نيوروكربت-جارد: إطار تشفير عصبي تنافسي ذاتي التكيف مقاوم للهجمات التفاضلية وحقن الأخطاء}
+
+\section*{2. المشكلة (Problem Statement)}
+تعتمد أنظمة التشفير المتناظر التقليدية بشكل أساسي على التحويلات الجبرية الصارمة وصناديق الاستبدال الثابتة (S-Boxes) كما في معيار التشفير المتقدم (AES) المقرّ من المعهد الوطني للمعايير والتقنية (Daemen \& Rijmen, 2002)، مما يمنحها أماناً حسابياً مصمتاً ولكنه يتسم بالجمود التكيفي.
+
+\subsection*{المشكلة الرئيسية}
+تواجه أنظمة التشفير العصبي التنافسي تحديات أمنية حرجة في تحقيق مبادئ الارتباك والانتشار، والوقوع في ظاهرة "التشفير المعكوس" بسبب عدم انضباط دوال الخسارة، بالإضافة إلى افتقارها للمتانة أمام اضطرابات العتاد.
+
+\subsection*{المشاكل الفرعية}
+\textbf{المشكلة الأولى:} عجز الشبكات العصبية غير المهيأة عن تحقيق معيار تأثير الانهيار الصارم (SAC).\\
+\textbf{المشكلة الثانية:} عدم استقرار التدريب التنافسي وظاهرة "التشفير المعكوس".\\
+\textbf{المشكلة الثالثة:} هشاشة النماذج العصبية المشفرة أمام هجمات حقن الأخطاء (Fault Injection).
+
+\section*{3. أهداف المشروع (Objectives)}
+\textbf{الهدف الأول:} تصميم وبناء معمارية عصبية هجينة تحقق معيار SAC بنسبة تقارب 50\%.\\
+\textbf{الهدف الثاني:} صياغة دالة تكلفة مقيدة تربيعياً لضمان فك تشفير سليم ومنع التشفير المعكوس.\\
+\textbf{الهدف الثالث:} تطوير جناح برمجي للتقييم الأمني بمقاييس NIST SP 800-22 وحقن الأخطاء ومقارنة AES-128.
+
+\newpage
+
+% ------------------ الصفحة 3: الأهمية والتقنيات ------------------
+\section*{4. أهمية المشروع (Project Significance)}
+\subsection*{\color{navyblue}الأهمية العلمية}
+\begin{itemize}
+\item تجسير الفجوة بين التعلم العميق التنافسي ونظرية شانون للأمان التام.
+\item دراسة تمثيلات التشفير العصبية التكيفية.
+\end{itemize}
+
+\subsection*{\color{navyblue}الأهمية التقنية}
+\begin{itemize}
+\item دمج معالجة البتات مع حزمة اختبارات NIST SP 800-22.
+\item بناء نظام قابل للتوسع والتطوير مستقبلاً.
+\end{itemize}
+
+\section*{5. التقنيات والأدوات المقترحة (Technologies and Tools)}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\rowcolor{navyblue} \color{white}\textbf{المحور} & \color{white}\textbf{الوصف / الأدوات المقترحة} \\
+\hline
+محرك الذكاء الاصطناعي & مكتبة PyTorch 2.x لبناء معمارية النماذج العصبية. \\
+\hline
+التسريع العتادي & حوسبة متوازية عبر منصة NVIDIA CUDA \& cuDNN. \\
+\hline
+التقييم الأمني والإحصائي & حزمة اختبارات العشوائية العالمية NIST SP 800-22 ومصفوفات SAC. \\
+\hline
+المرجعية المعيارية المقارنة & تطبيق معياري لـ AES-128 عبر مكتبة PyCryptodome. \\
+\hline
+البيانات والداتا سيت & مولد CSPRNG ديناميكي وداتا سيت نصوص حقيقية. \\
+\hline
+واجهة التحكم & لوحة تحكم تفاعلية عبر Streamlit / FastAPI. \\
+\hline
+\end{tabularx}
+
+\section*{6. الخطة الزمنية المقترحة (Gantt Chart)}
+
+\newpage
+
+% ------------------ الصفحة 4: جدول جانت وأعضاء الفريق ------------------
+\section*{مخطط جانت الزمني (Gantt Chart)}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+\rowcolor{navyblue} \color{white}\textbf{النشاط} & \color{white}\textbf{2-1} & \color{white}\textbf{4-3} & \color{white}\textbf{6-5} & \color{white}\textbf{8-7} & \color{white}\textbf{10-9} & \color{white}\textbf{12-11} & \color{white}\textbf{14-13} & \color{white}\textbf{16-15} \\
+\hline
+المرحلة 1: دراسة وتحليل المشكلة & \cellcolor{lightblue} & & & & & & & \\
+\hline
+المرحلة 2: تصميم معمارية النظام & & \cellcolor{lightblue} & & & & & & \\
+\hline
+المرحلة 3: تطوير نماذج PyTorch & & & \cellcolor{lightblue} & & & & & \\
+\hline
+المرحلة 4: ضبط التدريب التنافسي & & & & \cellcolor{lightblue} & & & & \\
+\hline
+المرحلة 5: كسر التشفير ومصفوفة SAC & & & & & \cellcolor{lightblue} & & & \\
+\hline
+المرحلة 6: تطبيق اختبارات NIST & & & & & & \cellcolor{lightblue} & & \\
+\hline
+المرحلة 7: محاكاة حقن الأخطاء ومقارنة AES & & & & & & & \cellcolor{lightblue} & \\
+\hline
+المرحلة 8: إعداد التقرير والمناقشة & & & & & & & & \cellcolor{lightblue} \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{1.5cm}
+\section*{7. أسماء أعضاء الفريق}
+\begin{center}
+\begin{tabular}{|c|p{10cm}|}
+\hline
+\rowcolor{navyblue} \color{white}\textbf{الرقم} & \color{white}\textbf{الاسم} \\
+\hline
+1 & يعقوب خالد محمد علي المهاجري \\
+\hline
+2 & سليمان صالح صالح العربي \\
+\hline
+3 & مالك عادل عبده جبران \\
+\hline
+\end{tabular}
+\end{center}
+
+\newpage
+
+% ------------------ الصفحة 5: المراجع ------------------
+\section*{المراجع (References)}
+\begin{english}
+\begin{enumerate}
+\item Abadi, M., \& Andersen, D. G. (2016). \textit{Learning to protect communications with adversarial neural cryptography}. arXiv preprint arXiv:1610.06918.
+\item Biham, E., \& Shamir, A. (1991). Differential cryptanalysis of DES-like cryptosystems. \textit{Journal of Cryptology}, 4(1), 3–72.
+\item Boneh, D., DeMillo, R. A., \& Lipton, R. J. (1997). On the importance of checking cryptographic protocols for faults. \textit{Advances in Cryptology — EUROCRYPT '97}, 37–51.
+\item Daemen, J., \& Rijmen, V. (2002). \textit{The design of Rijndael: AES - The Advanced Encryption Standard}. Springer-Verlag.
+\item Goodfellow, I., et al. (2014). Generative adversarial nets. \textit{Advances in Neural Information Processing Systems}, 27, 2672–2680.
+\item Gräf, J., \& Šíma, J. (2017). \textit{Analysis and cracking of adversarial neural cryptography}. arXiv preprint arXiv:1705.03458.
+\item Rukhin, A., et al. (2010). \textit{A statistical test suite for random and pseudorandom number generators for cryptographic applications} (NIST SP 800-22, Rev. 1a).
+\item Shannon, C. E. (1949). Communication theory of secrecy systems. \textit{Bell System Technical Journal}, 28(4), 656–715.
+\item Webster, A. F., \& Tavares, S. E. (1985). On the design of S-boxes. \textit{Advances in Cryptology — CRYPTO '85}, 523–534.
+\end{enumerate}
+\end{english}
+
+\end{document}

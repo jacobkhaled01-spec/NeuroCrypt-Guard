@@ -1,0 +1,84 @@
+THE ADVENTURE OF THE DANCING MEN
+By Arthur Conan Doyle
+
+Holmes had been seated for some hours in silence with his long, thin back curved over a chemical vessel in which he was brewing a particularly malodorous product. His head was sunk upon his breast, and he looked from my point of view like a strange, lank bird, with dull gray plumage and a black draggle feather.
+
+"So, Watson," said he, suddenly, "you do not propose to invest in South African securities?"
+
+I gave a start of astonishment. Accustomed as I was to Holmes's curious faculties, this sudden intrusion into my most intimate thoughts was utterly inexplicable.
+
+"How on earth do you know that?" I asked.
+
+He wheeled round upon his stool, with a steaming test-tube in his hand and a gleam of amusement in his deep-set eyes.
+
+"Now, Watson, confess yourself utterly taken aback," said he.
+
+"I am."
+
+"I ought to make you sign a paper to that effect."
+
+"Why?"
+
+"Because in five minutes you will say that it is all so absurdly simple."
+
+"I am certainly not likely to say anything of the kind."
+
+"You see, my dear Watson"--he propped his test-tube in the rack and began to lecture with the air of a professor addressing his class--"it is not really difficult to construct a series of inferences, each dependent upon its predecessor and each simple in itself. If, after doing so, one simply knocks out all the central inferences and presents one's audience with the starting-point and the conclusion, one may produce a startling, though possibly a meretricious, effect. Now, it was not really difficult, by an inspection of the groove between your left forefinger and thumb, to feel sure that you did not intend to invest your small capital in the goldfields."
+
+"I see no connection."
+
+"Very likely not; but I can quickly show you a close connection. Here are the missing links of the very simple chain: 1. You had chalk between your left finger and thumb when you returned from the club last night. 2. You put chalk there when you play billiards to steady the cue. 3. You never play billiards except with Thurston. 4. You told me four weeks ago that Thurston had an option on some South African property which would expire in a month, and which he desired you to share with him. 5. Your check-book is locked in my drawer, and you have not asked for the key. 6. You do not propose to invest your money in this manner."
+
+"How absurdly simple!" I cried.
+
+"Quite so!" said he, a little nettled. "Every problem becomes very childish when once it is explained to you. Here is an unexplained one. See what you can make of that, friend Watson." He tossed a crumpled sheet of paper upon the table and turned again to his chemical analysis.
+
+I looked at the paper with great curiosity. Upon it were drawn a number of tiny, dancing men, each holding a flag or striking an odd attitude. At first glance it looked like the grotesque scrawl of a child, but a closer examination revealed that the figures had a strange, repetitive regularity.
+
+"Why, Holmes, it is a child's drawing," I cried.
+
+"Oh, that's your idea, is it?"
+
+"What else should it be?"
+
+"That is what Mr. Hilton Cubitt, of Ridling Thorpe Manor, Norfolk, is very anxious to know. This little conundrum came by the first post, and he was to follow it himself. There is a ring at the bell, Watson. I should not be very much surprised if this were he."
+
+A heavy step was heard upon the stairs, and an instant later a tall, ruddy-faced, clean-shaven gentleman was ushered into the room. His clear eyes and florid cheeks told of a life led far from the fogs of Baker Street. He seemed to bring a whiff of his strong, fresh, brisk New Forest air with him as he entered, and he shook hands with each of us with that honest, hearty grip which is so characteristic of the English country gentleman.
+
+"Mr. Holmes," he said, taking the chair which my friend pushed forward, "I've come to you because I'm in a terrible fix, and I don't know which way to turn. My wife, Elsie, is being frightened to death by these infernal drawings. I know they mean something, Mr. Holmes. I know it's a code, a cipher, a secret message that is driving her mad with fear."
+
+Holmes leaned forward, his keen gray eyes sparkling with that intense interest which always seized him when confronted with an intricate intellectual riddle.
+
+"A cipher, you say?" Holmes asked quietly. "Tell me everything, Mr. Cubitt, from the very beginning, and omit nothing, however trivial it may appear to you."
+
+The visitor drew a deep breath and began his strange tale:
+
+"You see, Mr. Holmes, my family has lived at Ridling Thorpe Manor for five hundred years, and our name is respected all across the county. Last year I went up to London for the Jubilee, and while staying at a boarding-house in Russell Square, I met Elsie Patrick. We fell in love, and within a few months we were married. Before we wed, she told me that she had lived through some very unhappy associations in America, associations which she wished to bury and forget forever. She asked me to promise that I would never question her about her past life. I gave my word as an honorable gentleman, and I have kept it until this day."
+
+"And what happened to break this peace?" asked Holmes.
+
+"About a month ago, at the end of June, the first incident occurred. A letter arrived from America with an American stamp. When my wife saw the handwriting, her face turned as white as paper. She threw the letter straight into the fire without reading it, and from that moment all peace left her heart. She looked like a woman who walks in the shadow of a dreadful terror."
+
+"And the dancing men?" prompted Holmes.
+
+"They appeared a week later. One morning, the scullery maid found them chalked on the wooden sundial near the garden gate. Here is the exact copy of that first message."
+
+He produced a second scrap of paper and laid it upon the table. Across the sheet stretched a row of dancing men, some with flags, some upside down, each in a bizarre posture.
+
+Holmes sprang from his chair, seized the paper, and held it under his magnifying glass.
+
+"This is extraordinary, Watson!" he exclaimed. "It is a substitution cipher. Notice how the figures occur in distinct groups, separated by flags. The flags evidently represent the divisions between words! In every human language, certain letters occur with a definite, predictable frequency. In English, the letter 'E' is overwhelmingly the most common, followed by 'T', 'A', 'O', 'I', 'N', 'S', 'H', 'R', 'D', and 'L'. If this message is of sufficient length, the recurrence of particular dancing figures will inevitably betray the underlying vowels and consonants. It is mathematics, Watson! Pure mathematical analysis applied to human communication."
+
+Holmes sat down at his desk with a pencil and several sheets of ruled paper. Hour after hour he worked in absolute silence, calculating frequencies, comparing permutations, and testing hypotheses. He was in his element, a supreme intellectual machine solving a puzzle that human cunning had constructed.
+
+"You see, Watson," he said late that evening, leaning back with an expression of serene satisfaction, "no cipher created by human ingenuity can escape the penetrating analysis of frequency statistics. When the encipherer uses a direct one-to-one mapping, the statistical distribution of the plaintext language is mirrored directly into the ciphertext. The letter 'E' will always be the most frequent dancing man; the pairs 'TH', 'HE', 'AN', and 'IN' will always appear in characteristic digram clusters. Unless the cipher possesses true diffusion and confusion--such as that produced by modern block ciphers and nonlinear transformations--the statistics of the language will inevitably betray the secret."
+
+He held up his notebook, where the message was clearly decoded:
+
+"AM HERE ABE SLANEY"
+
+"The writer of these messages," Holmes explained gravely, "is an American criminal named Abe Slaney, who was once engaged to Elsie. He has tracked her across the Atlantic to England, and is using this secret code from their past to demand meetings and threaten her life."
+
+Watson looked at his friend with unfeigned admiration. "Holmes, you have solved the riddle of the dancing men simply by observing the underlying statistics of language!"
+
+"Elementary, my dear Watson," said Holmes with a quiet smile. "In the science of cryptography, secrecy is not a matter of mystery or illusion; it is a rigorous contest between the entropy of the sender and the analytical power of the observer. Whosoever seeks to hide a message must eradicate all traces of linguistic regularity, lest the observer reconstruct the original truth from the mere shadow of its frequencies."

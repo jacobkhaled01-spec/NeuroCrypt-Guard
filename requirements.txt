@@ -1,0 +1,27 @@
+# ==============================================================================
+# NeuroCrypt-Guard: Dependencies and Environment Requirements
+# متطلبات وبيئة تشغيل منظومة التشفير العصبي التنافسي
+# ==============================================================================
+
+# Core Machine Learning & Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Cryptographic Baseline & Benchmarking
+pycryptodome>=3.18.0
+cryptography>=41.0.0
+
+# Data Visualization & Dashboard
+matplotlib>=3.7.0
+seaborn>=0.12.0
+streamlit>=1.24.0
+fastapi>=0.95.0
+uvicorn>=0.22.0
+
+# Document & PDF Generation Tools
+python-docx>=0.8.11
+reportlab>=3.6.12
+pymupdf>=1.22.0
+Pillow>=9.5.0

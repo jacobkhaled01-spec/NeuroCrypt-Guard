@@ -1,0 +1,46 @@
+{
+  "bitstream_length": 500000,
+  "significance_alpha": 0.01,
+  "tests_conducted": 9,
+  "tests_passed": 0,
+  "pass_rate_pct": 0.0,
+  "nist_standard": "NIST SP 800-22 Rev. 1a",
+  "detailed_results": {
+    "Frequency (Monobit)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Block Frequency (M=128)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Runs": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Longest Run of Ones (M=128)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Discrete Fourier Transform (Spectral)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Cumulative Sums (Forward)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Approximate Entropy (m=2)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Serial Test (Pattern 1)": {
+      "p_value": 0.0,
+      "passed": false
+    },
+    "Serial Test (Pattern 2)": {
+      "p_value": 0.0,
+      "passed": false
+    }
+  }
+}

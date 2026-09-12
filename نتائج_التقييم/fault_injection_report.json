@@ -1,0 +1,105 @@
+{
+  "num_samples": 5000,
+  "msg_len_bits": 16,
+  "curve_data": [
+    {
+      "noise_rate": 0.0,
+      "noise_pct": 0.0,
+      "bob_ber": 0.00047,
+      "bob_ber_pct": 0.05,
+      "eve_ber": 0.45927,
+      "eve_ber_pct": 45.93,
+      "secrecy_gap_pct": 45.88
+    },
+    {
+      "noise_rate": 0.02,
+      "noise_pct": 2.0,
+      "bob_ber": 0.09973,
+      "bob_ber_pct": 9.97,
+      "eve_ber": 0.46355,
+      "eve_ber_pct": 46.36,
+      "secrecy_gap_pct": 36.38
+    },
+    {
+      "noise_rate": 0.05,
+      "noise_pct": 5.0,
+      "bob_ber": 0.21357,
+      "bob_ber_pct": 21.36,
+      "eve_ber": 0.46746,
+      "eve_ber_pct": 46.75,
+      "secrecy_gap_pct": 25.39
+    },
+    {
+      "noise_rate": 0.08,
+      "noise_pct": 8.0,
+      "bob_ber": 0.28872,
+      "bob_ber_pct": 28.87,
+      "eve_ber": 0.46719,
+      "eve_ber_pct": 46.72,
+      "secrecy_gap_pct": 17.85
+    },
+    {
+      "noise_rate": 0.1,
+      "noise_pct": 10.0,
+      "bob_ber": 0.33131,
+      "bob_ber_pct": 33.13,
+      "eve_ber": 0.47282,
+      "eve_ber_pct": 47.28,
+      "secrecy_gap_pct": 14.15
+    },
+    {
+      "noise_rate": 0.15,
+      "noise_pct": 15.0,
+      "bob_ber": 0.39544,
+      "bob_ber_pct": 39.54,
+      "eve_ber": 0.47685,
+      "eve_ber_pct": 47.68,
+      "secrecy_gap_pct": 8.14
+    },
+    {
+      "noise_rate": 0.2,
+      "noise_pct": 20.0,
+      "bob_ber": 0.43726,
+      "bob_ber_pct": 43.73,
+      "eve_ber": 0.47742,
+      "eve_ber_pct": 47.74,
+      "secrecy_gap_pct": 4.02
+    },
+    {
+      "noise_rate": 0.25,
+      "noise_pct": 25.0,
+      "bob_ber": 0.45877,
+      "bob_ber_pct": 45.88,
+      "eve_ber": 0.48139,
+      "eve_ber_pct": 48.14,
+      "secrecy_gap_pct": 2.26
+    },
+    {
+      "noise_rate": 0.3,
+      "noise_pct": 30.0,
+      "bob_ber": 0.4734,
+      "bob_ber_pct": 47.34,
+      "eve_ber": 0.48621,
+      "eve_ber_pct": 48.62,
+      "secrecy_gap_pct": 1.28
+    },
+    {
+      "noise_rate": 0.4,
+      "noise_pct": 40.0,
+      "bob_ber": 0.4893,
+      "bob_ber_pct": 48.93,
+      "eve_ber": 0.49521,
+      "eve_ber_pct": 49.52,
+      "secrecy_gap_pct": 0.59
+    },
+    {
+      "noise_rate": 0.5,
+      "noise_pct": 50.0,
+      "bob_ber": 0.49865,
+      "bob_ber_pct": 49.86,
+      "eve_ber": 0.50115,
+      "eve_ber_pct": 50.12,
+      "secrecy_gap_pct": 0.25
+    }
+  ]
+}
