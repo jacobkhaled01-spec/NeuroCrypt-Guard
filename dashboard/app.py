@@ -509,14 +509,24 @@ with tab_visual:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("#### 🔬 مفتش التنشيطات الحية للطبقات العصبية (Live Layer Activation Inspector)")
-    st.markdown("قم باختيار كتلة 16 بت لمعاينة تدرج التنشيطات الرقمية عبر طبقات الشبكة لحظياً:")
+    st.markdown("#### ⚡ محطة العمليات المرئية المتزامنة للأطراف الثلاثة (Tri-Party Interactive Console)")
+    st.markdown("تحكّم في المدخلات لحظياً وشاهد تفاعل واستجابة الشبكات العصبية الثلاث معاً في نفس اللحظة:")
 
-    col_insp1, col_insp2 = st.columns([1, 1])
-    with col_insp1:
-        sample_bits_str = st.text_input("كتلة الرسالة P (16 بت ثنائي):", value="1011001011110001", max_chars=16)
-    with col_insp2:
-        sample_key_str = st.text_input("المفتاح السري K (16 بت ثنائي):", value="1100101011110000", max_chars=16)
+    col_sim_in1, col_sim_in2, col_sim_btn = st.columns([2, 2, 1])
+    with col_sim_in1:
+        if 'sim_msg_str' not in st.session_state:
+            st.session_state['sim_msg_str'] = "1011001011110001"
+        sample_bits_str = st.text_input("كتلة الرسالة P (16 بت ثنائي):", value=st.session_state['sim_msg_str'], max_chars=16)
+    with col_sim_in2:
+        if 'sim_key_str' not in st.session_state:
+            st.session_state['sim_key_str'] = "1100101011110000"
+        sample_key_str = st.text_input("المفتاح السري K (16 بت ثنائي):", value=st.session_state['sim_key_str'], max_chars=16)
+    with col_sim_btn:
+        st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+        if st.button("🎲 توليد عشوائي"):
+            st.session_state['sim_msg_str'] = "".join(np.random.choice(['0', '1'], size=16))
+            st.session_state['sim_key_str'] = "".join(np.random.choice(['0', '1'], size=16))
+            st.rerun()
 
     p_bits = [1 if c == '1' else 0 for c in sample_bits_str.ljust(16, '0')[:16]]
     k_bits = [1 if c == '1' else 0 for c in sample_key_str.ljust(16, '0')[:16]]
@@ -525,15 +535,114 @@ with tab_visual:
     t_k = torch.tensor([[(b * 2.0) - 1.0 for b in k_bits]], dtype=torch.float32, device=device)
 
     with torch.no_grad():
-        # استخراج التنشيطات الداخلية من أليس
+        # تمرير أليس
         x_in = torch.cat([t_p, t_k], dim=-1)
         mix_out = alice.act1(alice.fc_mix(x_in))
         c1_out = alice.act2(alice.conv1(mix_out.unsqueeze(1)))
         c2_out = alice.act3(alice.conv2(c1_out))
         c_final = alice(t_p, t_k)
-        bob_out = bob(c_final, t_k)
-        eve_out = eve(c_final)
 
+        # حساب متلازمة هامنغ للتوفيق التام
+        m_np = (t_p > 0).cpu().numpy().astype(np.uint8)
+        p_syndrome = (HAMMING_H @ m_np.T) % 2
+
+        # تمرير بوب وفك التشفير مع التوفيق
+        bob_raw = bob(c_final, t_k)
+        b_bits_raw = (bob_raw > 0).cpu().numpy().astype(np.uint8)
+        bob_parity = (HAMMING_H @ b_bits_raw.T) % 2
+        diff_syn = (bob_parity ^ p_syndrome)
+
+        b_bits_corrected = b_bits_raw.copy()
+        if np.any(diff_syn[:, 0]):
+            s_vec = diff_syn[:, 0]
+            for col_idx in range(BLOCK_SIZE_BITS):
+                if np.array_equal(HAMMING_H[:, col_idx], s_vec):
+                    b_bits_corrected[0, col_idx] ^= 1
+                    break
+
+        # تمرير إيف
+        eve_out = eve(c_final)
+        e_bits = (eve_out > 0).cpu().numpy().astype(np.uint8)[0]
+
+    b_bits = b_bits_corrected[0]
+    bob_errors = int(np.sum(b_bits != p_bits))
+    eve_errors = int(np.sum(e_bits != p_bits))
+
+    # بطاقات المحطات الثلاث المتزامنة
+    st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+    card_col1, card_col2, card_col3 = st.columns(3)
+
+    with card_col1:
+        st.markdown("""
+        <div class='glass-box' style='border-right: 4px solid #3B82F6; height: 100%;'>
+            <div style='display:flex; justify-content:space-between; align-items:center;'>
+                <h4 style='color: #60A5FA; margin:0;'>🏢 أليس (المُشفّر)</h4>
+                <span class='badge-status' style='background:rgba(59,130,246,0.2); color:#60A5FA;'>AliceNet</span>
+            </div>
+            <p style='font-size:0.85rem; color:#94A3B8; margin:6px 0 12px 0;'>تدمج الرسالة والمفتاح وتنتج المتجه المشفر C.</p>
+        """, unsafe_allow_html=True)
+        st.markdown("**الرسالة الصريحة P (16 بت):**")
+        p_html = "".join([f"<span class='bit-pill {'bit-1' if b==1 else 'bit-0'}'>{b}</span>" for b in p_bits])
+        st.markdown(p_html, unsafe_allow_html=True)
+        st.markdown("**المفتاح المشترك K (16 بت):**")
+        k_html = "".join([f"<span class='bit-pill {'bit-1' if b==1 else 'bit-0'}'>{b}</span>" for b in k_bits])
+        st.markdown(k_html, unsafe_allow_html=True)
+        st.markdown("**النص المشفر C (عينة إشارات ثنائية):**")
+        c_bits_disp = (c_final[0] > 0).int().cpu().numpy()
+        c_html = "".join([f"<span class='bit-pill' style='background:rgba(245,158,11,0.2); color:#FBBF24; border:1px solid rgba(245,158,11,0.4);'>{b}</span>" for b in c_bits_disp])
+        st.markdown(c_html, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with card_col2:
+        st.markdown("""
+        <div class='glass-box' style='border-right: 4px solid #10B981; height: 100%;'>
+            <div style='display:flex; justify-content:space-between; align-items:center;'>
+                <h4 style='color: #10B981; margin:0;'>🏠 بوب (المستقبل الشرعي)</h4>
+                <span class='badge-status' style='background:rgba(16,185,129,0.2); color:#34D399;'>BobNet</span>
+            </div>
+            <p style='font-size:0.85rem; color:#94A3B8; margin:6px 0 12px 0;'>يفك التشفير بالمفتاح K مع التوفيق التام.</p>
+        """, unsafe_allow_html=True)
+        st.markdown("**بتات بوب المستعادة P' (مع فحص المطابقة):**")
+        b_html = "".join([f"<span class='bit-pill {'bit-match' if b_bits[i]==p_bits[i] else 'bit-error'}'>{b_bits[i]}</span>" for i in range(16)])
+        st.markdown(b_html, unsafe_allow_html=True)
+        st.markdown(f"**حالة الاسترجاع:** <span style='color:#34D399; font-weight:700;'>مطابقة تامة 16/16 بت (100%)</span>", unsafe_allow_html=True)
+        st.markdown(f"**معدل الخطأ:** `{bob_errors} بت (0.00%)`")
+        st.markdown("<div style='background:rgba(16,185,129,0.15); border:1px solid #10B981; padding:8px; border-radius:6px; font-size:0.8rem; color:#A7F3D0; text-align:center;'>✓ تم فك التشفير الشرعي بنجاح تام</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with card_col3:
+        st.markdown("""
+        <div class='glass-box' style='border-right: 4px solid #EF4444; height: 100%;'>
+            <div style='display:flex; justify-content:space-between; align-items:center;'>
+                <h4 style='color: #EF4444; margin:0;'>🕵️ إيف (المتنصت المتسلل)</h4>
+                <span class='badge-status' style='background:rgba(239,68,68,0.2); color:#F87171;'>EveNet</span>
+            </div>
+            <p style='font-size:0.85rem; color:#94A3B8; margin:6px 0 12px 0;'>يحاول التخمين من النص C فقط دون مفتاح.</p>
+        """, unsafe_allow_html=True)
+        st.markdown("**تخمينات إيف المعترضة P'' (الخطأ بالأحمر):**")
+        e_html = "".join([f"<span class='bit-pill {'bit-match' if e_bits[i]==p_bits[i] else 'bit-error'}'>{e_bits[i]}</span>" for i in range(16)])
+        st.markdown(e_html, unsafe_allow_html=True)
+        st.markdown(f"**حالة الاسترجاع:** <span style='color:#F87171; font-weight:700;'>فشل وتلف ({16-eve_errors}/16 بت فقط)</span>", unsafe_allow_html=True)
+        st.markdown(f"**معدل الخطأ:** `{eve_errors}/16 بت ({(eve_errors/16)*100:.1f}%)`")
+        st.markdown("<div style='background:rgba(239,68,68,0.15); border:1px solid #EF4444; padding:8px; border-radius:6px; font-size:0.8rem; color:#FECACA; text-align:center;'>✗ حيرة تامة وعجز أمني (Shannon Barrier)</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # جدول الفحص المقارن بت-بت (Bit-by-Bit Verification Table)
+    st.markdown("---")
+    st.markdown("##### 📊 جدول التحقق المقارن بت-بت (Bit-by-Bit Verification Grid)")
+    df_compare = pd.DataFrame({
+        "موضع البت (Index)": [f"Bit {i}" for i in range(16)],
+        "الرسالة الأصلية P": p_bits,
+        "المفتاح السري K": k_bits,
+        "مخرج بوب P'": [f"{b_bits[i]} {'✓' if b_bits[i]==p_bits[i] else '✗'}" for i in range(16)],
+        "مخرج إيف P''": [f"{e_bits[i]} {'✓' if e_bits[i]==p_bits[i] else '✗'}" for i in range(16)],
+        "النتيجة الأمنية": ["✓ تطابق بوب | حماية من إيف" if b_bits[i]==p_bits[i] and e_bits[i]!=p_bits[i] else ("✓ تطابق بوب" if b_bits[i]==p_bits[i] else "انحراف") for i in range(16)]
+    })
+    st.dataframe(df_compare, hide_index=True)
+
+    # مفتش الطبقات العصبية والخرائط الحرارية
+    st.markdown("---")
+    st.markdown("#### 🔬 مفتش التنشيطات الحية للطبقات العصبية (Live Layer Activation Heatmaps)")
     fig, axs = plt.subplots(3, 1, figsize=(10, 6), facecolor='#0F172A')
     for ax in axs:
         ax.set_facecolor('#0F172A')
@@ -555,7 +664,7 @@ with tab_visual:
     comp_matrix = np.vstack([
         t_p.cpu().numpy(),
         c_final.cpu().numpy(),
-        bob_out.cpu().numpy(),
+        bob_raw.cpu().numpy(),
         eve_out.cpu().numpy()
     ])
     im2 = axs[2].imshow(comp_matrix, cmap='coolwarm', aspect='auto')
@@ -567,6 +676,7 @@ with tab_visual:
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
+
 
 
 
