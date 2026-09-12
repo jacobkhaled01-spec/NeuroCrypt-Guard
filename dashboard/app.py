@@ -396,37 +396,39 @@ with tab1:
     single_key_tensor = torch.tensor([[(b * 2.0) - 1.0 for b in key_cleaned]], dtype=torch.float32, device=device)
 
     if input_mode == "📝 تشفير نص حر كامل (Multi-Block Stream Pipeline)":
+        presets = {
+            "مشروع جامعة إب": "جامعة إب - مشروع التشفير العصبي التنافسي NeuroCrypt-Guard v2.1 بنجاح تام!",
+            "اقتباس شيرلوك هولمز": "It has long been an axiom of mine that the little things are infinitely the most important.",
+            "رسالة سرية عسكرية": "CONFIDENTIAL: Neural key exchange verified. Channel secure from unauthorized interceptors.",
+            "أرقام ورموز وحسابات": "Coordinates: 13.9780° N, 44.1750° E | Transfer: $2,500,000.00 USD | Auth: 0x9AF4."
+        }
+
+        def on_preset_change():
+            chosen = st.session_state.get('preset_box')
+            if chosen in presets:
+                st.session_state['user_text_content'] = presets[chosen]
+
+        if 'user_text_content' not in st.session_state:
+            st.session_state['user_text_content'] = presets["مشروع جامعة إب"]
+
         preset_col1, preset_col2 = st.columns([3, 1])
         with preset_col2:
-            preset_choice = st.selectbox(
+            st.selectbox(
                 "عينات جاهزة للتجربة:",
-                [
-                    "نص مخصص (Custom)",
-                    "مشروع جامعة إب",
-                    "اقتباس شيرلوك هولمز",
-                    "رسالة سرية عسكرية",
-                    "أرقام ورموز وحسابات"
-                ]
+                ["مشروع جامعة إب", "اقتباس شيرلوك هولمز", "رسالة سرية عسكرية", "أرقام ورموز وحسابات"],
+                key="preset_box",
+                on_change=on_preset_change
             )
-            presets = {
-                "مشروع جامعة إب": "جامعة إب - مشروع التشفير العصبي التنافسي NeuroCrypt-Guard v2.1 بنجاح تام!",
-                "اقتباس شيرلوك هولمز": "It has long been an axiom of mine that the little things are infinitely the most important.",
-                "رسالة سرية عسكرية": "CONFIDENTIAL: Neural key exchange verified. Channel secure from unauthorized interceptors.",
-                "أرقام ورموز وحسابات": "Coordinates: 13.9780° N, 44.1750° E | Transfer: $2,500,000.00 USD | Auth: 0x9AF4."
-            }
 
         with preset_col1:
-            default_val = presets.get(preset_choice, "NeuroCrypt-Guard: Adversarial Neural Cryptography at Ibb University!")
             user_text = st.text_area(
                 "النص الصريح المراد تأمينه وتشفيره (Plaintext):",
-                value=default_val,
+                key="user_text_content",
                 height=90
             )
 
-        btn_encrypt = st.button("🚀 تشغيل خوارزمية التشفير العصبي والتنصت اللحظي", type="primary")
-
-        if btn_encrypt or 'first_run_done' not in st.session_state:
-            st.session_state['first_run_done'] = True
+        # التشفير ينفذ تلقائياً عند وجود النص ويظل مستقراً عند تحريك السلايدر
+        if user_text.strip():
             blocks_tensor, orig_byte_len = text_to_blocks(user_text, device)
             num_blocks = blocks_tensor.shape[0]
             batch_keys = single_key_tensor.repeat(num_blocks, 1)
@@ -482,11 +484,16 @@ with tab1:
 
             st.divider()
 
-            # مستعرض الكتل التفاعلي (Interactive Block Inspector)
+            # مستعرض الكتل التفاعلي (Interactive Block Inspector) المستقر
             st.markdown("#### 🔬 مستكشف الكتل البتية بالتفصيل (Block-by-Block Bit Inspector)")
             b_select_col1, b_select_col2 = st.columns([1, 3])
+            
             with b_select_col1:
-                selected_block_idx = st.slider("اختر رقم الكتلة للمعاينة:", 1, num_blocks, 1) - 1
+                if num_blocks > 1:
+                    selected_block_idx = st.slider("اختر رقم الكتلة للمعاينة:", 1, num_blocks, 1, key="block_slider") - 1
+                else:
+                    selected_block_idx = 0
+                    st.caption("ℹ️ يتكون النص الحالي من كتلة واحدة فقط (16 بت).")
 
             b_orig = (blocks_tensor[selected_block_idx] > 0).to(torch.int8).cpu().numpy()
             b_ciph = (ciphers[selected_block_idx] > 0).to(torch.int8).cpu().numpy()
@@ -494,7 +501,7 @@ with tab1:
             b_eve  = (eve_dec[selected_block_idx] > 0).to(torch.int8).cpu().numpy()
 
             with b_select_col2:
-                st.markdown(f"**معاينة كبسولات البتات للكتلة #{selected_block_idx + 1}:**")
+                st.markdown(f"**معاينة كبسولات البتات للكتلة #{selected_block_idx + 1} من أصل {num_blocks}:**")
                 
                 def render_pills(bits_arr, label, color_class):
                     pills_html = "".join([f"<span class='bit-pill {color_class}'>{b}</span>" for b in bits_arr])
