@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroCrypt-Guard v2.2 — العرض التقديمي الأكاديمي والمختبر التفاعلي</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Floating Interactive Navigation Dock (Dadanitic Style) -->
+    <div class="nav-dock">
+        <button class="nav-btn" onclick="PresentationApp.prevSlide()" title="الشريحة السابقة (السهم الأيمن / PageUp)">▲</button>
+        <div id="navCounter" class="nav-counter">1 / 14</div>
+        <button class="nav-btn" onclick="PresentationApp.nextSlide()" title="الشريحة التالية (السهم الأيسر / Space / PageDown)">▼</button>
+        <button class="nav-btn" onclick="PresentationApp.toggleFullscreen()" title="ملء الشاشة (F)">⛶</button>
+        <button class="nav-btn" id="btn-audio" onclick="PresentationApp.toggleAudio()" title="كتم / تشغيل الصوتيات (M)">🔊</button>
+        <button class="nav-btn" onclick="PresentationApp.toggleDrawer()" title="فهرس ومصغرات الشرائح (O)">📑</button>
+    </div>
+
+    <!-- Quick Jump Drawer Modal -->
+    <div class="drawer-modal" id="drawer-modal">
+        <div class="drawer-header">
+            <h2 style="color: var(--accent); font-size: 1.8rem;">📑 فهرس ومصغرات شرائح العرض الأكاديمي</h2>
+            <button class="nav-btn" style="width: auto; padding: 6px 16px; border-radius: 10px; border: 1px solid var(--border-glass);" onclick="PresentationApp.closeAllModals()">✕ إغلاق</button>
+        </div>
+        <div class="drawer-grid">
+            <div class="drawer-card active" onclick="PresentationApp.scrollToSlide(1)">
+                <span style="font-weight: 700; color: var(--accent);">1. الغلاف والافتتاح</span>
+                <small style="color: var(--text-muted);">هوية المشروع، الفريق، والإحصائيات الكلية</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(2)">
+                <span style="font-weight: 700; color: var(--accent);">2. المشكلة والدافع الهندسي</span>
+                <small style="color: var(--text-muted);">قصور التشفير الكلاسيكي وفجوة Google Brain</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(3)">
+                <span style="font-weight: 700; color: var(--accent);">3. التأصيل الرياضي لشانون</span>
+                <small style="color: var(--text-muted);">السرية التامة ودالة الخسارة المقيدة تربيعياً</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(4)">
+                <span style="font-weight: 700; color: var(--accent);">4. المعمارية الهندسية الثلاثية</span>
+                <small style="color: var(--text-muted);">AliceNet, BobNet, DeepResidualEve</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(5)" style="border-color: var(--accent); background: rgba(0, 180, 216, 0.08);">
+                <span style="font-weight: 700; color: var(--gold);">5. 🌐 مجسم المعمارية 3D</span>
+                <small style="color: var(--text-muted);">المجسم الهولوغرافي وتشريح الشبكات الثلاث</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(6)" style="border-color: var(--green); background: rgba(0, 217, 165, 0.08);">
+                <span style="font-weight: 700; color: var(--green);">6. 🎮 المحاكي العصبي الحي</span>
+                <small style="color: var(--text-muted);">خلايا متوهجة، نبضات مشبكية، وليزر هامنغ</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(7)">
+                <span style="font-weight: 700; color: var(--accent);">7. ابتكار طبقة هامنغ SEC</span>
+                <small style="color: var(--text-muted);">توفيق المعلومات وتصحيح الخطأ التناظري</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(8)">
+                <span style="font-weight: 700; color: var(--accent);">8. مطابقة بصمة SHA-256</span>
+                <small style="color: var(--text-muted);">استعادة حتمية 100% للملفات الرقمية</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(9)">
+                <span style="font-weight: 700; color: var(--accent);">9. معايير NIST ومصفوفة SAC</span>
+                <small style="color: var(--text-muted);">مصفوفة الانهيار 0.498 وفحوصات العشوائية</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(10)">
+                <span style="font-weight: 700; color: var(--accent);">10. صمود طيف الخصوم Q1</span>
+                <small style="color: var(--text-muted);">صمود التشفير ضد خصم عميق بـ 26K وزناً</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(11)">
+                <span style="font-weight: 700; color: var(--accent);">11. المقارنة المعيارية مع AES</span>
+                <small style="color: var(--text-muted);">الأداء، الكمون، والمرونة التكيفية</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(12)">
+                <span style="font-weight: 700; color: var(--accent);">12. المنظومة التشغيلية</span>
+                <small style="color: var(--text-muted);">أداة سطر الأوامر، فحص الـ 15 ثانية، والداشبورد</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(13)">
+                <span style="font-weight: 700; color: var(--accent);">13. دليل أسئلة وأفخاخ اللجنة</span>
+                <small style="color: var(--text-muted);">أهم الأسئلة المتوقعة والإجابات النموذجية</small>
+            </div>
+            <div class="drawer-card" onclick="PresentationApp.scrollToSlide(14)">
+                <span style="font-weight: 700; color: var(--accent);">14. الخلاصة والتوصيات</span>
+                <small style="color: var(--text-muted);">النتائج الختامية، ما بعد الكوانتم، والشكر</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         SLIDE 1: TITLE & EXECUTIVE RESEARCH OVERVIEW
+         ==================================================================== -->
+    <section class="slide" id="slide-1" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <span class="badge gold" style="margin-bottom: 20px;">🛡️ بحث تجريبي تطبيقي · مشروع تخرج معتمد v2.2</span>
+        <h1>NeuroCrypt-Guard</h1>
+        <p style="font-size: 1.45rem; max-width: 950px; margin-bottom: 35px; color: rgba(255, 255, 255, 0.9);">
+            منظومة التشفير العصبي التنافسي العملياتية: دمج التعلم العميق مع طبقة التوفيق التشفيري (Hamming SEC) لتحقيق سرية شانون التامة واستعادة البتات بنسبة 100.00%
+        </p>
+
+        <div class="card" style="margin-bottom: 35px; padding: 22px 45px; border-color: rgba(255, 217, 61, 0.35); max-width: 950px; width: 100%;">
+            <p style="font-size: 1.15rem; color: #fff;">
+                <strong>فريق البحث والابتكار:</strong> 
+                <span style="color: var(--accent);">يعقوب خالد المهاجري</span> &nbsp;|&nbsp; 
+                <span style="color: var(--green);">سليمان صالح العربي</span> &nbsp;|&nbsp; 
+                <span style="color: var(--gold);">مالك عادل جبران</span>
+            </p>
+            <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 6px;">
+                قسم تقنية المعلومات وعلوم الحاسوب — كلية الحاسوب وتكنولوجيا المعلومات — جامعة إب (2025–2026 م)
+            </p>
+        </div>
+
+        <div class="grid-4" style="max-width: 1050px; width: 100%;">
+            <div class="metric">
+                <div class="metric-value green">100.00%</div>
+                <div class="metric-label">استعادة البتات لبوب (SHA-256)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value red">45.40%</div>
+                <div class="metric-label">خطأ المتنصت إيف (حد شانون)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.498</div>
+                <div class="metric-label">معيار الانهيار الصارم (SAC)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">26,161</div>
+                <div class="metric-label">أوزان الخصم الفائق (Deep Eve)</div>
+            </div>
+        </div>
+
+        <div class="slide-number">01 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 2: RESEARCH PROBLEM & GOOGLE BRAIN GAP
+         ==================================================================== -->
+    <section class="slide" id="slide-2">
+        <h2>⚠️ مشكلة البحث: قصور التشفير الكلاسيكي وفجوة Google Brain</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>🔒 قصور التشفير الكلاسيكي (AES / RSA)</h3>
+                <ul style="margin-top: 10px;">
+                    <li><strong>جمود الخوارزميات:</strong> جداول استبدال ثابتة (Fixed S-Boxes) تفتقر للمرونة التكيفية في القنوات اللاسلكية المشوشة.</li>
+                    <li><strong>تهديد الحوسبة الكمومية:</strong> خوارزميات شور وغروفر تكسر المفاتيح العامة وتضعف المتماثلة جذرياً.</li>
+                    <li><strong>انعدام التكيف الذاتي:</strong> عجز النظم التقليدية عن توليد شيفرات ذاتية الحماية تناسب أجهزة إنترنت الأشياء (IoT).</li>
+                </ul>
+            </div>
+
+            <div class="card eve-tint">
+                <h3 style="color: var(--red);">💥 فجوة دراسة Google Brain (Abadi & Andersen, 2016)</h3>
+                <ul style="margin-top: 10px;">
+                    <li><strong>معضلة الفضاء المتصل (Analog Continuity Gap):</strong> مخرجات الشبكة العصبية مستمرة، وكان التقطيع الثنائي يسبب خطأ 0.07% يدمر الملفات الرقمية تماماً!</li>
+                    <li><strong>ثغرة الخصم المتقدم (Graf & Sima, 2017):</strong> انهيار التشفير بالكامل بمجرد تزويد إيف بطبقات أعمق من أليس.</li>
+                    <li><strong>غياب النظام العملياتي:</strong> بقيت أبحاث العالم مجرد محاكاة نظرية لم تُنتج أداة لتشفير وفك تشفير ملفات حقيقية.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card alice-tint" style="margin-top: 25px;">
+            <h3>💡 الحل الابتكاري في منظومة NeuroCrypt-Guard v2.2</h3>
+            <p>
+                الدمج الهجين بين <strong>التعلم التنافسي المقيد تربيعياً (ANC)</strong> لحماية القناة ضد أعتى الخصوم، مع <strong>طبقة التوفيق التشفيري (Hamming SEC)</strong> المقتبسة من توزيع المفاتيح الكمومية (QKD) لتحقيق حتمية رقمية 100.00% ومطابقة تامة لبصمة SHA-256.
+            </p>
+        </div>
+
+        <div class="slide-number">02 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 3: MATHEMATICAL DERIVATION & SHANNON'S SECRECY
+         ==================================================================== -->
+    <section class="slide" id="slide-3">
+        <h2>📐 التأصيل الرياضي: شرط شانون ودالة الخسارة المقيدة</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>📜 شرط شانون للأمان التام (Shannon, 1949)</h3>
+                <p>
+                    تتحقق السرية التامة عندما لا يضيف اعتراض النص المشفر $C$ أي معلومة تفيد في كشف النص الأصلي $P$، أي أن المعلومات المتبادلة بينهما تصبح صفراً:
+                </p>
+                <div class="equation">
+                    <span class="math-var">P</span>(<span class="math-var">P</span> = <span class="math-var">m</span> | <span class="math-var">C</span> = <span class="math-var">c</span>) = <span class="math-var">P</span>(<span class="math-var">P</span> = <span class="math-var">m</span>) &nbsp;&hArr;&nbsp; <span class="math-var">I</span>(<span class="math-var">P</span>; <span class="math-var">C</span>) = 0
+                </div>
+                <p style="font-size: 0.95rem; color: var(--text-muted);">
+                    وهذا يفرض رياضياً أن يكون معدل خطأ المتنصت إيف مساوياً للتخمين العشوائي النقي: <strong>BER<sub>Eve</sub> = 50.00%</strong>.
+                </p>
+            </div>
+
+            <div class="card alice-tint">
+                <h3>⚖️ دالة الخسارة المقيدة تربيعياً (Proposed Bounded Loss)</h3>
+                <p>
+                    اشتقاق دالة هدف تمنع ظاهرة <em>السرية المعكوسة</em> وتضمن تركيز طاقة التدريب على دقة بوب بمجرد عجز إيف:
+                </p>
+                <div class="equation" style="color: var(--gold); border-color: rgba(255, 217, 61, 0.35);">
+                    <span class="math-var">L</span><span class="math-sub">AB</span> = <span class="math-var">L</span><span class="math-sub">Bob</span> + 
+                    <span class="math-paren">(</span>
+                    <span class="math-frac">
+                        <span class="math-num">max(0, &nbsp; 0.5 &minus; <span class="math-var">L</span><span class="math-sub">Eve</span>)</span>
+                        <span class="math-den">0.5</span>
+                    </span>
+                    <span class="math-paren">)</span><span class="math-sup">2</span>
+                </div>
+                <p style="font-size: 0.95rem; color: var(--text-muted);">
+                    <strong>الدلالة الرياضية:</strong> إذا حقق الخصم <i>L</i><sub>Eve</sub> &ge; 0.50 تصبح عقوبة السرية صفراً. وإذا حاول الخصم الاقتراب تتصاعد العقوبة تربيعياً لإجبار أليس على تغيير فضاء التشفير فوراً!
+                </p>
+            </div>
+        </div>
+
+        <div class="slide-number">03 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 4: TRI-PARTY NEURAL ARCHITECTURE
+         ==================================================================== -->
+    <section class="slide" id="slide-4">
+        <h2>🏗️ المعمارية الهندسية ومواصفات الشبكات العصبية الثلاث</h2>
+        <div class="grid-3">
+            <div class="card alice-tint">
+                <h3>🏢 محطة أليس (AliceNet)</h3>
+                <ul>
+                    <li>• <strong>الدخل:</strong> [Plaintext (16) + Key (16)] = 32-dim</li>
+                    <li>• <strong>طبقة الخلط:</strong> Linear (32 &rarr; 32) + LeakyReLU</li>
+                    <li>• <strong>طبقات الانتشار:</strong> 3x Conv1D (k=4, 2, 1)</li>
+                    <li>• <strong>الخرج التشفيري:</strong> Float16 Latents + 5-bit Parity</li>
+                    <li>• <strong>إجمالي البارامترات:</strong> 3,857 وزن تشفيري</li>
+                </ul>
+            </div>
+
+            <div class="card bob-tint">
+                <h3 style="color: var(--green);">🏠 محطة بوب الشرعي (BobNet)</h3>
+                <ul>
+                    <li>• <strong>الدخل:</strong> [Ciphertext (16) + Shared Key (16)] = 32-dim</li>
+                    <li>• <strong>طبقة فك الخلط:</strong> Linear (32 &rarr; 32)</li>
+                    <li>• <strong>الشبكة العكسية:</strong> Inversion CNN (32 &rarr; 16 &rarr; 1)</li>
+                    <li>• <strong>طبقة التوفيق:</strong> منشور تصحيح هامنغ (SEC)</li>
+                    <li>• <strong>النتيجة:</strong> استعادة حتمية 100% وتطابق تام لبصمة SHA-256</li>
+                </ul>
+            </div>
+
+            <div class="card eve-tint">
+                <h3 style="color: var(--red);">🕵️ محطة إيف المتنصت (Deep Eve)</h3>
+                <ul>
+                    <li>• <strong>الدخل:</strong> Ciphertext (16) فقط بدون المفتاح المشترك!</li>
+                    <li>• <strong>القدرة الاستيعابية:</strong> تدريب مضاعف k=2 لكل خطوة لأليس</li>
+                    <li>• <strong>المعمارية العميقة:</strong> 4x Conv1D (64 قنوات) + وصلات متبقية</li>
+                    <li>• <strong>إجمالي البارامترات:</strong> 26,161 وزناً (أكثر من 4 أضعاف أليس)</li>
+                    <li>• <strong>النتيجة:</strong> عجز كامل وخطأ عشوائي 45.40%</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide-number">04 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 5: 3D HOLOGRAPHIC ARCHITECTURE WORKSTATION
+         المجسم ثلاثي الأبعاد والتشريح الهولوغرافي
+         ==================================================================== -->
+    <section class="slide" id="slide-5">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2>🌐 مجسم المعمارية ثلاثي الأبعاد والتشريح الهولوغرافي</h2>
+            <span class="badge blue">Holographic 3D Workstation · WebGL Three.js</span>
+        </div>
+
+        <div class="lab-container-card">
+            <!-- 3D Header Mode Buttons -->
+            <div class="lab-header-controls">
+                <button class="btn-lab-mode active" id="btn-mode-overview" onclick="Neural3D.setViewMode('overview')">
+                    🌐 العرض الشامل الموحد
+                </button>
+                <button class="btn-lab-mode" id="btn-mode-alice" onclick="Neural3D.setViewMode('alice')">
+                    🔬 تشريح أليس (AliceNet)
+                </button>
+                <button class="btn-lab-mode bob" id="btn-mode-bob" onclick="Neural3D.setViewMode('bob')">
+                    🔬 تشريح بوب (BobNet)
+                </button>
+                <button class="btn-lab-mode eve" id="btn-mode-eve" onclick="Neural3D.setViewMode('eve')">
+                    🔬 تشريح إيف (DeepEve)
+                </button>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="three-canvas-container"></div>
+
+            <!-- Simulation Controls Bottom -->
+            <div class="lab-sim-bar">
+                <button class="sim-btn play-btn" id="btn-sim-play" onclick="Neural3D.toggleSimulation()" title="تشغيل / إيقاف التدفق">▶</button>
+                <button class="sim-btn" id="btn-sim-reset" onclick="Neural3D.resetSimulation()" title="إعادة ضبط التدفق">↺</button>
+                <button class="sim-btn" id="btn-sim-speed" data-speed="1" title="سرعة المحاكاة">1x</button>
+                <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: 8px;">محاكاة تدفق التينسورات والجسيمات في الفضاء 3D</span>
+            </div>
+
+            <!-- Layer Inspector Card -->
+            <div class="layer-inspector-card" id="layer-inspector">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 6px; margin-bottom: 8px;">
+                    <span style="font-weight: 700; color: var(--accent); font-size: 0.95rem;" id="insp-title">بيانات الطبقة العصبية</span>
+                    <button style="background: transparent; border: none; color: var(--text-muted); cursor: pointer;" onclick="document.getElementById('layer-inspector').style.display='none'">✕</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;">
+                    <div><strong style="color: var(--text-muted);">الأبعاد:</strong> <span id="insp-shape" style="color: var(--accent); font-family: 'Fira Code', monospace;"></span></div>
+                    <div><strong style="color: var(--text-muted);">البارامترات:</strong> <span id="insp-params" style="color: var(--gold);"></span></div>
+                    <div><strong style="color: var(--text-muted);">الدالة:</strong> <span id="insp-func" style="color: var(--green); font-family: 'Fira Code', monospace;"></span></div>
+                    <div style="margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border-glass);">
+                        <strong style="color: var(--text-muted);">الوظيفة التشفيرية:</strong>
+                        <p id="insp-role" style="color: #e2e8f0; margin-top: 2px; font-size: 0.8rem;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-number">05 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 6: LIVE SYNAPTIC NEURAL SIMULATOR
+         المحاكي العصبي التفاعلي الحي
+         ==================================================================== -->
+    <section class="slide" id="slide-6">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2>🎮 المحاكي العصبي التفاعلي الحي (Live Synaptic Engine)</h2>
+            <span class="badge orange">Interactive Synapses · 60 FPS HTML5 Canvas</span>
+        </div>
+
+        <div class="sim-container-card">
+            <!-- Command Inputs -->
+            <div class="sim-command-bar">
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <span style="font-weight: 700; color: var(--accent); font-size: 0.9rem;">📝 الرسالة:</span>
+                    <input type="text" id="sim-text-input" class="sim-input-box" value="جامعة إب 2026 — سرية تامة" style="flex: 1;">
+
+                    <span style="font-weight: 700; color: var(--gold); font-size: 0.9rem; margin-right: 8px;">🔑 المفتاح:</span>
+                    <input type="text" id="sim-key-input" class="sim-input-box key-input" value="1100101011110000" maxlength="16">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="btn-neon-action" id="sim-play-trigger" onclick="if(window.NeuralSimulator) NeuralSimulator.startSimulation()">
+                        <span>⚡</span> تشفير ونقل البيانات عبر الشبكة العصبية
+                    </button>
+                    <button class="nav-btn" style="border: 1px solid var(--border-glass); border-radius: 8px;" id="sim-step-trigger" onclick="if(window.NeuralSimulator) NeuralSimulator.stepForward()" title="خطوة واحدة">⏭</button>
+                    <button class="nav-btn" style="border: 1px solid var(--border-glass); border-radius: 8px;" id="sim-reset-trigger" onclick="if(window.NeuralSimulator) NeuralSimulator.resetSimulationState()" title="إعادة ضبط">↺</button>
+                </div>
+            </div>
+
+            <!-- Canvas Viewport -->
+            <div class="sim-canvas-wrap">
+                <canvas id="neural-sim-canvas" width="1100" height="440"></canvas>
+            </div>
+
+            <!-- Lower Monitor & Live Logs -->
+            <div class="sim-lower-hud">
+                <div class="hud-monitors-box">
+                    <div class="monitor-row">
+                        <span style="color: var(--accent); font-weight: 700;">• مدخلات أليس (Plaintext Bits):</span>
+                        <span class="hash-pill" id="sim-plain-hex">1011001011010011</span>
+                    </div>
+                    <div class="monitor-row">
+                        <span style="color: var(--green); font-weight: 700;">• استعادة بوب الشرعي (Reconstructed):</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="hash-pill match" id="sim-bob-hex">1011001011010011</span>
+                            <span class="hash-pill match" id="sim-match-badge">✓ 100.00% SHA-256 MATCH</span>
+                        </div>
+                    </div>
+                    <div class="monitor-row">
+                        <span style="color: var(--red); font-weight: 700;">• محاولة المتنصت إيف (Eavesdropped):</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="hash-pill mismatch" id="sim-eve-hex">0100110100101100</span>
+                            <span class="hash-pill mismatch">✗ BER = 45.40% (SHANNON NOISE)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sim-terminal-box" id="sim-terminal-log">
+                    <div style="color: #34d399;">[SYSTEM READY] محرك المحاكاة العصبية جاهز للتشغيل الحي...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-number">06 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 7: HAMMING SEC INNOVATION & INTERACTIVE FLIPPER
+         ==================================================================== -->
+    <section class="slide" id="slide-7">
+        <h2>🧩 ابتكار طبقة التوفيق التشفيري (Hamming SEC Innovation)</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>🔍 حل معضلة التناظر العصبي vs الحتمية الرقمية</h3>
+                <p>
+                    الشبكات العصبية دوال مستمرة. كان بوب يستعيد البيانات بدقة 99.93% (أي خطأ واحد لكل 1,500 بت). في التشفير؛ خطأ بت واحد يعني تلفاً فورياً للملف وفشل بصمة SHA-256 بالكامل!
+                </p>
+                <div class="equation" style="font-size: 1.25rem;">
+                    <span style="color: var(--gold); font-weight: 700;">Syndrome</span>&nbsp;
+                    <span class="math-var">S</span> = 
+                    <span class="math-paren">(</span>
+                    <span class="math-var">H</span> &middot; <span class="math-var">P</span><span class="math-sup">T</span>
+                    <span class="math-paren">)</span> 
+                    &oplus; <span style="color: var(--accent);">Parity</span> 
+                    &nbsp;&implies;&nbsp; 
+                    <span style="color: var(--green); font-weight: 700;">Bit Error Corrected</span>
+                </div>
+                <p style="font-size: 0.95rem; color: var(--green);">
+                    ✓ بفضل مصفوفة هامنغ <i>H</i><sub>5&times;16</sub>، يتم تصحيح الخطأ التناظري الفردي فورياً دون نقل النص الأصلي.
+                </p>
+            </div>
+
+            <div class="card bob-tint">
+                <h3 style="color: var(--green);">🛡️ لماذا لا يستفيد المتنصت إيف من المتلازمة؟</h3>
+                <ul>
+                    <li>• كود هامنغ مصمم لمعالجة <strong>خطأ مفرد فقط</strong> في الكتلة ($BER \le 6.25\%$).</li>
+                    <li>• خطأ إيف يستقر عند <strong>45.40%</strong> (أي 7-8 بتات خاطئة في كل كتلة 16-بت).</li>
+                    <li>• رياضياً؛ تطبيق كود التصحيح على سيل عشوائي يزيد تشتت الخصم ولا يقدم أي معلومة نافعة!</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Interactive Hamming Bit Flipper Widget -->
+        <div class="card" style="margin-top: 20px; text-align: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 style="margin: 0; color: var(--accent);">🎮 جرب بنفسك: محاكي تصحيح هامنغ التفاعلي لكتلة 16-بت</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">(انقر على أي بت لإحداث خطأ ومشاهدة التدخل الفوري)</span>
+            </div>
+            <div class="bit-row" id="interactive-bits"></div>
+            <div id="hamming-status-msg" style="font-size: 0.95rem; color: var(--green); font-family: 'Fira Code', monospace; min-height: 28px;">
+                الحالة: الكتلة متوافقة بنسبة 100.00% ولا توجد أي أخطاء تناظرية.
+            </div>
+        </div>
+
+        <div class="slide-number">07 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 8: SHA-256 EXACT VERIFICATION ON REAL FILES
+         ==================================================================== -->
+    <section class="slide" id="slide-8">
+        <h2>📄 إثبات الاستعادة الحتمية ومطابقة بصمة SHA-256 على ملفات حقيقية</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>نوع الملف الرقمي</th>
+                    <th>الحجم بالبايت</th>
+                    <th>عدد الكتل (16-بت)</th>
+                    <th>زمن المعالجة</th>
+                    <th>معدل خطأ بوب</th>
+                    <th>مطابقة بصمة SHA-256</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>📄 مستند نصي UTF-8</strong></td>
+                    <td>378 بايت</td>
+                    <td>189 كتلة</td>
+                    <td>0.76 ms</td>
+                    <td><span style="color: var(--green); font-weight: 700;">0.00%</span></td>
+                    <td><span class="badge">تطابق تام 100.00% ✓</span></td>
+                </tr>
+                <tr>
+                    <td><strong>🖼️ صورة شعار الجامعة (PNG)</strong></td>
+                    <td>32.49 KB</td>
+                    <td>16,246 كتلة</td>
+                    <td>56.85 ms</td>
+                    <td><span style="color: var(--green); font-weight: 700;">0.00%</span></td>
+                    <td><span class="badge">تطابق تام 100.00% ✓</span></td>
+                </tr>
+                <tr>
+                    <td><strong>📸 صورة فوتوغرافية عالية الدقة (JPEG)</strong></td>
+                    <td>1.79 MB</td>
+                    <td>897,103 كتلة</td>
+                    <td>894.20 ms</td>
+                    <td><span style="color: var(--green); font-weight: 700;">0.00%</span></td>
+                    <td><span class="badge">تطابق تام 100.00% ✓</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Live Hash Inspector -->
+        <div class="card" style="margin-top: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0; color: var(--gold);">🔍 مفتش البصمات التشفيرية الفوري:</h3>
+                <select id="file-benchmark-select" class="sim-input-box" style="padding: 6px 14px;">
+                    <option value="text">مستند نصي UTF-8 (Sample.txt)</option>
+                    <option value="png">صورة شعار جامعة إب (Logo_Ibb.png)</option>
+                    <option value="binary">حمولة ثنائية مشفرة (.ncg Payload)</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+                <div><span style="color: var(--text-muted);">بصمة الملف الأصلية:</span> <span class="hash-pill match" id="bench-orig-hash">601c02b66e159422373dcb1598146961ab20a270a4c3cfdbf58a680de2e9c38d</span></div>
+                <div><span style="color: var(--text-muted);">بصمة الاستعادة الشرعية لبوب:</span> <span class="hash-pill match" id="bench-bob-hash">601c02b66e159422373dcb1598146961ab20a270a4c3cfdbf58a680de2e9c38d</span></div>
+                <div><span style="color: var(--text-muted);">بصمة محاولة المتنصت إيف:</span> <span class="hash-pill mismatch" id="bench-eve-hash">2d47e7e2ecca78715b567a1b430d2f387758d6ac99f662ba5db630cd945a7549</span></div>
+            </div>
+        </div>
+
+        <div class="slide-number">08 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 9: NIST SP 800-22 & STRICT AVALANCHE CRITERION (SAC)
+         ==================================================================== -->
+    <section class="slide" id="slide-9">
+        <h2>📊 الفحوصات الأمنية المعيارية الدولية (NIST & SAC)</h2>
+        <div class="grid-2">
+            <div class="card alice-tint">
+                <h3>🌊 مصفوفة تأثير الانهيار الصارم (SAC Matrix 16x16)</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">
+                    انقر على أي خلية لمشاهدة احتمالية تغير بت الخرج عند قلب بت الدخل:
+                </p>
+                <div class="sac-grid-view" id="sac-heatmap-container"></div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+                    <span>الهدف النظري لويبستر وتافاريس: 0.5000</span>
+                    <span style="color: var(--accent);" id="sac-inspected-val">المتوسط المحقق: 0.4980 (&sigma; = 0.014)</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🛡️ حزمة اختبارات العشوائية الإحصائية (NIST SP 800-22)</h3>
+                <ul>
+                    <li>• <strong>توازن الترددات (Frequency Test):</strong> نسبة الآحاد في البايتات المشفرة بلغت <strong>48.40%</strong> (قريب جداً من 50%).</li>
+                    <li>• <strong>المناعة التفاضلية:</strong> يضمن معيار SAC بنسبة 0.498 مناعة تامة ضد هجمات التحليل التفاضلي والتخطي الخطي.</li>
+                    <li>• <strong>حقن الأعطال (Fault Injection):</strong> أثبتت التجارب أن حقن عطل في بت واحد من المفتاح يؤدي لانهيار فك التشفير إلى عشوائية تامة بنسبة خطأ 50.2%.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide-number">09 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 10: ADVERSARY SPECTRUM (Q1 EVALUATION)
+         ==================================================================== -->
+    <section class="slide" id="slide-10">
+        <h2>🛡️ صمود التشفير ضد طيف الخصوم الفائقين (Multi-Tier Spectrum)</h2>
+        <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 20px;">
+            <button class="btn-lab-mode eve active adv-tier-btn" data-tier="deep">Deep Residual Eve (26,161 بارامتر)</button>
+            <button class="btn-lab-mode eve adv-tier-btn" data-tier="wide">Wide Eve (6,017 بارامتر)</button>
+            <button class="btn-lab-mode eve adv-tier-btn" data-tier="standard">Standard Eve (6,017 بارامتر)</button>
+        </div>
+
+        <div class="card eve-tint">
+            <h3 id="adv-detail-title" style="color: var(--red);">الخصم العميق فائق التعقيد (Deep Residual Eve)</h3>
+            <div class="grid-3" style="margin: 20px 0;">
+                <div class="metric">
+                    <div class="metric-value" id="adv-detail-params" style="color: var(--gold);">26,161</div>
+                    <div class="metric-label">إجمالي البارامترات والأوزان</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value red" id="adv-detail-ber">40.69%</div>
+                    <div class="metric-label">معدل خطأ البتات النهائي (BER)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value green">45.00%+</div>
+                    <div class="metric-label">فجوة السرية المحققة (Secrecy Gap)</div>
+                </div>
+            </div>
+            <p id="adv-detail-verdict" style="font-size: 1.15rem; color: #fff;">
+                صمود شانون التام — تشتت محاولات الخصم وزيادة معدل الخطأ رغم مضاعفة الحجم 4 أضعاف وإضافة وصلات تخطي متبقية!
+            </p>
+        </div>
+
+        <div class="slide-number">10 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 11: BENCHMARK VS AES-128
+         ==================================================================== -->
+    <section class="slide" id="slide-11">
+        <h2>⚡ المقارنة المعيارية للأداء مع عتاد AES-128</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>وجه المقارنة الهندسي</th>
+                    <th>معيار التشفير المتقدم (AES-128)</th>
+                    <th>منظومة NeuroCrypt-Guard v2.2</th>
+                    <th>التحليل والدلالة الأكاديمية</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>طبيعة المعالجة</strong></td>
+                    <td>تسريع عتادي مباشر (AES-NI)</td>
+                    <td>معالجة تينسورات عصبية (CUDA / NPU)</td>
+                    <td>توافق أصيل مع مسرعات الذكاء الاصطناعي</td>
+                </tr>
+                <tr>
+                    <td><strong>زمن كمون الكتلة</strong></td>
+                    <td>&lt; 0.01 مللي ثانية</td>
+                    <td><strong>0.80 مللي ثانية (GPU)</strong></td>
+                    <td>كمون منخفض ومناسب لقنوات الزمن الحقيقي</td>
+                </tr>
+                <tr>
+                    <td><strong>المرونة والتكيف</strong></td>
+                    <td>ثابتة ومصمتة (Static S-Boxes)</td>
+                    <td><strong>ذاتية التكيف والتعلم (Self-Adaptive)</strong></td>
+                    <td>تتكيف تلقائياً مع قنوات الاتصال والضوضاء</td>
+                </tr>
+                <tr>
+                    <td><strong>استعادة البيانات</strong></td>
+                    <td>حتمية 100%</td>
+                    <td><strong>حتمية 100% (Hamming SEC)</strong></td>
+                    <td>تطابق كامل ومطلق في بصمة SHA-256</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="slide-number">11 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 12: OPERATIONAL SUITE & DASHBOARD
+         ==================================================================== -->
+    <section class="slide" id="slide-12">
+        <h2>💻 المنظومة التشغيلية المتكاملة والبرمجيات المسلمة</h2>
+        <div class="grid-3">
+            <div class="card alice-tint">
+                <h3>💻 أداة CLI التدفقي (cipher_tool.py)</h3>
+                <p style="font-size: 0.95rem;">
+                    محرك تشغيل فائق يدعم التشفير وفك التشفير التدفقي بالدفعات (Chunked Streaming) لتفادي نفاد الذاكرة، ويعمل على أي نوع ملف (.txt, .png, .pdf, .mp4).
+                </p>
+            </div>
+
+            <div class="card bob-tint">
+                <h3 style="color: var(--green);">⚡ فحص اللجنة في 15 ثانية (run_verification.py)</h3>
+                <p style="font-size: 0.95rem;">
+                    سكريبت تدقيق فوري مستقل يعمل من الطرفية لتدقيق سلامة الأوزان، فحص مطابقة SHA-256 بنسبة 100%، وإصدار شهادة الاعتماد الأكاديمي.
+                </p>
+            </div>
+
+            <div class="card eve-tint">
+                <h3 style="color: var(--accent);">📊 لوحة التحكم التفاعلية (Streamlit Dashboard)</h3>
+                <p style="font-size: 0.95rem;">
+                    تطبيق ويب تفاعلي بخمسة أجنحة تشمل محطة الملفات الحقيقية، المخطط المعماري المباشر، ومصفوفة الانهيار، ومنحنيات التدريب.
+                </p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 25px; border-color: rgba(0, 217, 165, 0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0; color: var(--green);">✓ مستودع المشروع مفتوح المصدر على GitHub:</h3>
+                    <p style="font-size: 0.95rem; margin-top: 4px;">كود موثق بالكامل بنمط APA 7th Edition، ودفاتر التجارب، والأوراق المرجعية.</p>
+                </div>
+                <span class="hash-pill" style="direction: ltr; font-size: 0.95rem;">
+                    https://github.com/jacobkhaled01-spec/NeuroCrypt-Guard
+                </span>
+            </div>
+        </div>
+
+        <div class="slide-number">12 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 13: DEFENSE COMMITTEE Q&A TRAPS
+         دليل أسئلة وأفخاخ لجنة المناقشة
+         ==================================================================== -->
+    <section class="slide" id="slide-13">
+        <h2>🎯 دليل أسئلة وأفخاخ لجنة المناقشة والإجابات النموذجية</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>❓ الفخ الأول: "هل متلازمة هامنغ تسرب معلومات تفيد إيف؟"</h3>
+                <p style="font-size: 0.95rem;">
+                    <strong>الإجابة النموذجية:</strong> قطيعاً لا؛ لأن متلازمة هامنغ تمثل تدقيق تكافؤ خطي مصمم فقط لتصحيح خطأ واحد ($BER \le 6.25\%$). خطأ إيف يستقر عند 45.40% (شانون)، وتطبيق المتلازمة على سيل عشوائي يزيد تشتت الخصم دون أن يقدم أي معلومة عن النص الأصلي!
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>❓ الفخ الثاني: "لماذا لم تستخدموا خوارزمية AES الجاهزة؟"</h3>
+                <p style="font-size: 0.95rem;">
+                    <strong>الإجابة النموذجية:</strong> التشفير الكلاسيكي مصمت بقواعد ثابتة (Static S-Boxes) لا يتكيف مع قنوات الاتصال والضوضاء، ومهدد بالحوسبة الكمومية. يفتح NeuroCrypt-Guard أفقاً لتشفير تكيفي يتعلم ذاتياً دمج الحماية مع وسائط نقل البيانات.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>❓ الفخ الثالث: "كيف تثبتون عدم وجود Overfitting في التدريب؟"</h3>
+                <p style="font-size: 0.95rem;">
+                    <strong>الإجابة النموذجية:</strong> بيانات التدريب مولدة ديناميكياً عبر مولد أمني عشوائي (CSPRNG) بدون إعادة أي عينة مرتين، وتم اختبار النموذج على ملفات رقمية خارجية مستقلة بنسبة تطابق 100.00%.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>❓ الفخ الرابع: "ما هو سبب اختيار k=2 لخطوات تدريب إيف؟"</h3>
+                <p style="font-size: 0.95rem;">
+                    <strong>الإجابة النموذجية:</strong> لمنح المتنصت أفضلية تعليمية مضاعفة (Advantageous Eve) تضمن أمان التصميم ضد أقوى الهجمات المستقبلية وتمنع الوقوع في فخ التحسين المحلي لأليس.
+                </p>
+            </div>
+        </div>
+
+        <div class="slide-number">13 / 14</div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 14: CONCLUSION, FUTURE WORK & COMMITTEE Q&A
+         ==================================================================== -->
+    <section class="slide" id="slide-14" style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <span class="badge green" style="margin-bottom: 20px;">🎓 الخاتمة والتوصيات المستقبلية</span>
+        <h2 style="justify-content: center; margin-bottom: 25px;">الخلاصة والتطلعات المستقبلية</h2>
+
+        <div class="grid-2" style="max-width: 1050px; text-align: right; margin-bottom: 30px;">
+            <div class="card alice-tint">
+                <h3>🎯 أبرز المنجزات المحققة:</h3>
+                <ul>
+                    <li>1. بناء أول منظومة تشفير عصبي عملياتية تحقق استعادة 100.00% للملفات الرقمية.</li>
+                    <li>2. صمود مطلق لحاجز شانون للسرية التامة ضد طيف من 3 خصوم متقدمين.</li>
+                    <li>3. تحقيق معيار الانهيار الصارم (SAC = 0.4980) واجتياز اختبارات العشوائية.</li>
+                    <li>4. توثيق أكاديمي كامل بنمط APA 7th Edition وكتاب تخرج شامل للمناقشة.</li>
+                </ul>
+            </div>
+
+            <div class="card bob-tint">
+                <h3 style="color: var(--green);">🚀 آفاق التطوير المستقبلية (Future Work):</h3>
+                <ul>
+                    <li>• التوسع إلى كتل أطول (N = 64 / 128) باستخدام محولات الانتباه (Transformers).</li>
+                    <li>• دمج التشفير العصبي مع خوارزميات ما بعد الكوانتم (Post-Quantum Cryptography).</li>
+                    <li>• تضمين النماذج داخل رقائق المعالجة العصبية الطرفية المدمجة (Edge NPUs).</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 25px 60px; max-width: 800px; border-color: rgba(0, 180, 216, 0.35);">
+            <h3 style="font-size: 2rem; color: var(--gold); margin-bottom: 8px;">شكراً جزيلاً لحسن استماعكم الموقر</h3>
+            <p style="font-size: 1.15rem; color: var(--text-muted);">
+                نسعد ونتشرف بتلقي كافة أسئلة وملاحظات لجنة المناقشة الأكاديمية الكريمة
+            </p>
+        </div>
+
+        <div class="slide-number">14 / 14</div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="js/three.min.js"></script>
+    <script src="js/neural3d.js"></script>
+    <script src="js/neural_simulator.js"></script>
+    <script src="js/presentation.js"></script>
+</body>
+
+</html>
