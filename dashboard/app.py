@@ -123,7 +123,9 @@ alice, bob, eve, device, models_loaded = load_models()
 
 # الشريط الجانبي (Sidebar)
 with st.sidebar:
-    st.image("assets/ibbuniv.png" if (PROJECT_ROOT / "assets" / "ibbuniv.png").exists() else None, width=90)
+    logo_path = PROJECT_ROOT / "assets" / "logo_ibb_clean.png"
+    if logo_path.exists():
+        st.image(str(logo_path), width=90)
     st.title("NeuroCrypt-Guard")
     st.markdown("**نظام التشفير العصبي التنافسي الذكي**")
     st.caption("Adversarial Neural Cryptography System")
