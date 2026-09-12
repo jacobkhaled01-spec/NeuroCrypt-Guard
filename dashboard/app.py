@@ -539,16 +539,16 @@ with tab_visual:
         ax.set_facecolor('#0F172A')
         ax.tick_params(colors='#94A3B8', labelsize=8)
         for spine in ax.spines.values():
-            spine.set_color('rgba(255,255,255,0.1)')
+            spine.set_color('#334155')
 
     # رسم تنشيطات الخلط
     im0 = axs[0].imshow(mix_out.cpu().numpy(), cmap='magma', aspect='auto')
-    axs[0].set_title("تنشيطات طبقة الخلط الخطي (Linear Confusion Mix - 32 Dim)", color='#F8FAFC', fontsize=9, fontname='Cairo')
+    axs[0].set_title("Linear Confusion Mix Layer Activations (32-Dim)", color='#F8FAFC', fontsize=9)
     fig.colorbar(im0, ax=axs[0], fraction=0.02)
 
     # رسم تنشيطات الالتفاف
     im1 = axs[1].imshow(c1_out.squeeze(0).cpu().numpy(), cmap='viridis', aspect='auto')
-    axs[1].set_title("خريطة ميزات الالتفاف المكاني والانتشار (Conv1D Diffusion Features - 32 Channels)", color='#F8FAFC', fontsize=9, fontname='Cairo')
+    axs[1].set_title("1D-CNN Spatial Diffusion Features (32 Channels)", color='#F8FAFC', fontsize=9)
     fig.colorbar(im1, ax=axs[1], fraction=0.02)
 
     # رسم النص المشفر ومقارنة المخرجات
@@ -560,12 +560,14 @@ with tab_visual:
     ])
     im2 = axs[2].imshow(comp_matrix, cmap='coolwarm', aspect='auto')
     axs[2].set_yticks([0, 1, 2, 3])
-    axs[2].set_yticklabels(["الأصل P", "المشفر C", "بوب Bob", "إيف Eve"], fontname='Cairo', color='#E2E8F0')
-    axs[2].set_title("مصفوفة المقارنة التشفيرية النهائية (Plaintext vs Ciphertext vs Decrypted)", color='#F8FAFC', fontsize=9, fontname='Cairo')
+    axs[2].set_yticklabels(["Plaintext P", "Ciphertext C", "Bob P'", "Eve P''"], color='#E2E8F0', fontsize=8)
+    axs[2].set_title("Comparative Ciphertext Latent Vectors vs Decoded Vectors", color='#F8FAFC', fontsize=9)
     fig.colorbar(im2, ax=axs[2], fraction=0.02)
 
     plt.tight_layout()
     st.pyplot(fig)
+    plt.close(fig)
+
 
 
 # ==========================================================================
