@@ -10,13 +10,16 @@ Advanced Operational Neural Cryptography Console & Interactive Architecture Visu
 المشرف الأكاديمي: أستاذ مقرر التشفير — كلية الحاسوب وتكنولوجيا المعلومات
 """
 
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
 from pathlib import Path
 import sys
-import os
 import json
 import io
 import time
 import warnings
+import importlib
 import numpy as np
 import pandas as pd
 import torch
@@ -34,13 +37,20 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.models import AliceNet, BobNet, EveNet, DeepEveNet, DEFAULT_MESSAGE_SIZE
-from src.loss import calculate_ber
+# فرض إعادة تحميل وحدة التشفير التدفقية لضمان عدم استخدام النسخة القديمة المحفوظة بالذاكرة
+import src.cipher_tool
+importlib.reload(src.cipher_tool)
 from src.cipher_tool import (
     encrypt_file, decrypt_file, eve_attack_file,
     compute_sha256, parse_key_bits, HAMMING_H,
     BLOCK_SIZE_BITS, PARITY_BITS_COUNT
 )
+from src.models import AliceNet, BobNet, EveNet, DeepEveNet, DEFAULT_MESSAGE_SIZE
+from src.loss import calculate_ber
+
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+
 
 # --------------------------------------------------------------------------
 # 1. إعدادات الصفحة وهوية المنظومة
@@ -382,6 +392,8 @@ with tab_files:
         with col_btn1:
             if st.button("🚀 تشفير الملف العصبي الحقيقي (AliceNet)", type="primary"):
                 with st.spinner("جاري التشفير العصبي وحساب متلازمة التوفيق التشفيري..."):
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
                     ckpt_dir = PROJECT_ROOT / "checkpoints"
                     orig_h, enc_h, elapsed, speed = encrypt_file(in_temp_path, enc_temp_path, key_input_str, ckpt_dir, device)
                     st.session_state['enc_done'] = True
@@ -422,6 +434,8 @@ with tab_files:
 
                 if st.button("🔓 فك التشفير الشرعي عبر بوب"):
                     with st.spinner("جاري فك التشفير والتوفيق التشفيري..."):
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
                         ckpt_dir = PROJECT_ROOT / "checkpoints"
                         rec_h, ok, d_time, d_speed = decrypt_file(Path(st.session_state['enc_path']), dec_temp_path, key_input_str, ckpt_dir, device)
                         rec_data = dec_temp_path.read_bytes()
@@ -456,9 +470,12 @@ with tab_files:
 
                 if st.button("⚡ محاولة كسر التشفير عبر إيف"):
                     with st.spinner("جاري محاولة التخمين المعادي..."):
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
                         ckpt_dir = PROJECT_ROOT / "checkpoints"
                         eve_h, eve_time, eve_err = eve_attack_file(Path(st.session_state['enc_path']), eve_temp_path, ckpt_dir, device)
                         eve_data = eve_temp_path.read_bytes()
+
 
                         st.markdown("**بصمة الملف المعترض التالف:**")
                         st.markdown(f"<div class='sha-badge' style='color: #EF4444;'>{eve_h}</div>", unsafe_allow_html=True)
