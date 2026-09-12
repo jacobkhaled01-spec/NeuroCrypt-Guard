@@ -44,3 +44,8 @@ Desktop.ini
 
 # Large training logs if needed
 *.log
+
+# Temporary operational test runs
+temp_run/
+*.ncg
+
