@@ -169,3 +169,53 @@ class EveNet(nn.Module):
         x = x.squeeze(1)
         eavesdropped = self.tanh(self.fc_out(x))
         return eavesdropped
+
+
+class DeepEveNet(nn.Module):
+    """
+    شبكة Deep Eve (المتنصت فائق السعة والعمق - Over-Parameterized Deep Adversary):
+    تتضمن 4 طبقات التفافية مع 64 قناة ووصلات متبقية (Residual Connections) لنمذجة
+    أعتى هجمات كسر التشفير وفق متطلبات مراجعي مجلات Q1 (IEEE TIFS / ACM CCS).
+
+    Deep, over-parameterized eavesdropper with residual connections and 64 channels
+    designed for rigorous cryptanalytic stress testing in Q1 academic benchmarks.
+    """
+
+    def __init__(self, message_size: int = DEFAULT_MESSAGE_SIZE, channels: int = 64) -> None:
+        super(DeepEveNet, self).__init__()
+        self.message_size = message_size
+        self.channels = channels
+
+        self.fc_in = nn.Linear(message_size, 2 * message_size)
+        self.act1 = nn.LeakyReLU(LEAKY_RELU_SLOPE)
+
+        self.conv1 = nn.Conv1d(in_channels=1, out_channels=channels, kernel_size=4, stride=1, padding="same")
+        self.act2 = nn.LeakyReLU(LEAKY_RELU_SLOPE)
+
+        self.conv2 = nn.Conv1d(in_channels=channels, out_channels=channels, kernel_size=3, stride=1, padding="same")
+        self.act3 = nn.LeakyReLU(LEAKY_RELU_SLOPE)
+
+        self.conv3 = nn.Conv1d(in_channels=channels, out_channels=channels, kernel_size=3, stride=1, padding="same")
+        self.act4 = nn.LeakyReLU(LEAKY_RELU_SLOPE)
+
+        self.conv4 = nn.Conv1d(in_channels=channels, out_channels=1, kernel_size=1, stride=1, padding="same")
+
+        self.fc_out = nn.Linear(2 * message_size, message_size)
+        self.tanh = nn.Tanh()
+
+    def forward(self, ciphertext: torch.Tensor) -> torch.Tensor:
+        """
+        التمرير الأمامي للمتنصت العميق: P''' = DeepEve(C)
+        Forward pass for deep adversary decryption attempt.
+        """
+        x = self.act1(self.fc_in(ciphertext))
+        x = x.unsqueeze(1)  # (Batch, 1, 2*N)
+
+        c1 = self.act2(self.conv1(x))
+        c2 = self.act3(self.conv2(c1)) + c1  # Residual Connection
+        c3 = self.act4(self.conv3(c2)) + c2  # Residual Connection
+        out = self.conv4(c3)
+
+        out = out.squeeze(1)
+        return self.tanh(self.fc_out(out))
+

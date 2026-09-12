@@ -1,0 +1,28 @@
+{
+  "evaluation_timestamp": "2026-09-12 18:16:13",
+  "hardware": "Quadro T1000",
+  "eval_samples": 5000,
+  "adversaries": {
+    "Standard_Eve": {
+      "parameters": 6017,
+      "final_ber": 0.4033125042915344,
+      "final_ber_pct": 40.33,
+      "secrecy_retained": true,
+      "training_time_sec": 5.22
+    },
+    "Wide_Eve": {
+      "parameters": 6017,
+      "final_ber": 0.4048749804496765,
+      "final_ber_pct": 40.49,
+      "secrecy_retained": true,
+      "training_time_sec": 5.32
+    },
+    "Deep_Residual_Eve": {
+      "parameters": 26161,
+      "final_ber": 0.4069124758243561,
+      "final_ber_pct": 40.69,
+      "secrecy_retained": true,
+      "training_time_sec": 5.84
+    }
+  }
+}
