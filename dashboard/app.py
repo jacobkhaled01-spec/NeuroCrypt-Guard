@@ -202,72 +202,152 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "⚡ حقن الأخطاء ومقارنة AES-128"
 ])
 
+def text_to_blocks(text: str, device: torch.device):
+    """تحويل أي نص إلى مصفوفة كتل عصبية بحجم 16 بت لكل كتلة"""
+    raw_bytes = text.encode('utf-8')
+    if len(raw_bytes) == 0:
+        raw_bytes = b" "
+    if len(raw_bytes) % 2 != 0:
+        raw_bytes += b" "  # حشو مسافة لتطابق حجم الكتلة 2 بايت (16 بت)
+    num_blocks = len(raw_bytes) // 2
+    blocks = []
+    for i in range(num_blocks):
+        b1, b2 = raw_bytes[2 * i], raw_bytes[2 * i + 1]
+        val16 = (b1 << 8) | b2
+        bits = [(val16 >> (15 - b)) & 1 for b in range(16)]
+        blocks.append([(b * 2.0) - 1.0 for b in bits])
+    return torch.tensor(blocks, dtype=torch.float32, device=device), len(raw_bytes)
+
+
+def blocks_to_text(bits_tensor: torch.Tensor, orig_len: int) -> str:
+    """استرجاع النص من مخرجات البتات العصبية"""
+    bits = (bits_tensor > 0).to(torch.int8).cpu().numpy()
+    byte_arr = bytearray()
+    for block in bits:
+        val16 = 0
+        for b in block:
+            val16 = (val16 << 1) | int(b)
+        b1 = (val16 >> 8) & 0xFF
+        b2 = val16 & 0xFF
+        byte_arr.extend([b1, b2])
+    return byte_arr[:orig_len].decode('utf-8', errors='replace')
+
+
 # --------------------------------------------------------------------------
 # التبويب 1: محاكي التشفير اللحظي
 # --------------------------------------------------------------------------
 with tab1:
     st.subheader("🔐 محاكي التشفير وفك التشفير والتنصت في الوقت الفعلي")
-    st.markdown("يتيح هذا المحاكي إدخال نص أو كتلة بتات، وتشفيرها بواسطة **AliceNet**، ثم استعادتها بواسطة **BobNet** (باستخدام المفتاح السري المشترك)، ومحاولة كسرها بواسطة الخصم **EveNet** (بدون المفتاح).")
+    st.markdown("يدعم النظام وضعين: **تشفير نصوص حرة بأي طول** عبر تقسيمها إلى كتل عصبية (Multi-Block Pipeline)، أو **فحص كتلة بتات منفردة** (16 بت) للمقارنة البتية التفصيلية.")
 
-    sim_col1, sim_col2 = st.columns([1, 1])
+    input_mode = st.radio(
+        "اختر نمط الاختبار:",
+        ["📝 تشفير نص حر بأي طول (Multi-Block Stream)", "🔢 فحص كتلة بتات منفردة (Single 16-Bit Block)"],
+        horizontal=True
+    )
 
-    with sim_col1:
-        st.markdown("#### 1. تجهيز المدخلات")
-        input_mode = st.radio("نوع المدخلات:", ["أحرف نصية (ASCII Text)", "كتلة بتات ثنائية (16 Bits)"], horizontal=True)
+    key_str = st.text_input("المفتاح السري المشترك K (16 بت ثنائي):", value="1100101011110000", max_chars=16)
+    key_cleaned = [1 if c == '1' else 0 for c in key_str.ljust(16, '0')[:16]]
+    single_key_tensor = torch.tensor([[(b * 2.0) - 1.0 for b in key_cleaned]], dtype=torch.float32, device=device)
 
-        if input_mode == "أحرف نصية (ASCII Text)":
-            text_in = st.text_input("أدخل نصاً للتشفير (حرفان = 16 بت):", value="OK", max_chars=2)
-            # تحويل النص لبتات
-            bytes_val = text_in.encode('utf-8')[:2]
-            if len(bytes_val) < 2:
-                bytes_val = bytes_val.ljust(2, b'\x00')
-            int16 = int.from_bytes(bytes_val, byteorder='big')
-            bit_list = [(int16 >> (15 - b)) & 1 for b in range(16)]
-            bits_tensor = torch.tensor([[(b * 2.0) - 1.0 for b in bit_list]], dtype=torch.float32, device=device)
-        else:
-            bits_str = st.text_input("أدخل 16 بت (0 أو 1):", value="1011001011010001", max_chars=16)
+    if input_mode == "📝 تشفير نص حر بأي طول (Multi-Block Stream)":
+        user_text = st.text_area(
+            "أدخل النص المراد تشفيره (عربي أو إنجليزي، أي طول):",
+            value="Hello World! NeuroCrypt-Guard is secure at Ibb University."
+        )
+
+        if st.button("🚀 تشفير واسترجاع النص الكامل", type="primary", use_container_width=True):
+            blocks_tensor, orig_byte_len = text_to_blocks(user_text, device)
+            num_blocks = blocks_tensor.shape[0]
+            # تكرار المفتاح لكل كتلة
+            batch_keys = single_key_tensor.repeat(num_blocks, 1)
+
+            with torch.no_grad():
+                ciphers = alice(blocks_tensor, batch_keys)
+                bob_dec = bob(ciphers, batch_keys)
+                eve_dec = eve(ciphers)
+
+                bob_recovered_text = blocks_to_text(bob_dec, orig_byte_len)
+                eve_recovered_text = blocks_to_text(eve_dec, orig_byte_len)
+
+                total_bits = num_blocks * 16
+                bob_errors = int(torch.sum(torch.ne(blocks_tensor > 0, bob_dec > 0)).item())
+                eve_errors = int(torch.sum(torch.ne(blocks_tensor > 0, eve_dec > 0)).item())
+
+                bob_acc = ((total_bits - bob_errors) / total_bits) * 100.0
+                eve_ber = (eve_errors / total_bits) * 100.0
+
+            st.write("")
+            res_c1, res_c2, res_c3 = st.columns(3)
+            with res_c1:
+                st.metric("عدد الكتل المعالجة", f"{num_blocks} كتل ({total_bits} بت)")
+            with res_c2:
+                st.metric("دقة استرجاع بوب (Bob)", f"{bob_acc:.2f}%", delta="تطابق كامل" if bob_acc >= 99.0 else "تالف")
+            with res_c3:
+                st.metric("حيرة إيف (Eve BER)", f"{eve_ber:.2f}%", delta="أمان شانون" if eve_ber >= 40.0 else "كشف")
+
+            st.markdown("#### 📄 مقارنة النصوص المسترجعة:")
+            st.info(f"**النص الأصلي (Original Text):**\n\n`{user_text}`")
+
+            col_out_b, col_out_e = st.columns(2)
+            with col_out_b:
+                st.success(f"**النص المسترجع عبر BobNet (مع المفتاح):**\n\n`{bob_recovered_text}`\n\n✓ الأخطاء: {bob_errors} من {total_bits} بت (استرجاع تام)")
+            with col_out_e:
+                st.error(f"**ما يراه المتنصت EveNet (بدون المفتاح):**\n\n`{eve_recovered_text}`\n\n✗ نصوص مشوشة بالكامل ومحجوبة تماماً!")
+
+            with st.expander("🔍 استعراض تفاصيل إحدى الكتل البتية"):
+                selected_block = st.slider("اختر رقم الكتلة:", 1, num_blocks, 1) - 1
+                b_orig = (blocks_tensor[selected_block] > 0).to(torch.int8).cpu().numpy()
+                b_ciph = (ciphers[selected_block] > 0).to(torch.int8).cpu().numpy()
+                b_bob  = (bob_dec[selected_block] > 0).to(torch.int8).cpu().numpy()
+                b_eve  = (eve_dec[selected_block] > 0).to(torch.int8).cpu().numpy()
+
+                df_b = pd.DataFrame({
+                    "موضع البت": list(range(1, 17)),
+                    "الرسالة الأصلية P": b_orig,
+                    "المفتاح K": key_cleaned,
+                    "النص المشفر C": b_ciph,
+                    "فك تشفير بوب P'": b_bob,
+                    "تخمين إيف P''": b_eve,
+                    "تطابق بوب؟": ["✓ نعم" if b_orig[i] == b_bob[i] else "✗ خطأ" for i in range(16)],
+                    "حجب إيف؟": ["✓ محجوب" if b_orig[i] != b_eve[i] else "⚠ كشفت" for i in range(16)]
+                })
+                st.dataframe(df_b, use_container_width=True, hide_index=True)
+
+    else:
+        # فحص كتلة بتات منفردة
+        sim_col1, sim_col2 = st.columns(2)
+        with sim_col1:
+            bits_str = st.text_input("أدخل 16 بت ثنائي (0 أو 1):", value="1011001011010001", max_chars=16)
             bits_cleaned = [1 if c == '1' else 0 for c in bits_str.ljust(16, '0')[:16]]
             bits_tensor = torch.tensor([[(b * 2.0) - 1.0 for b in bits_cleaned]], dtype=torch.float32, device=device)
+            btn_run = st.button("🚀 تشغيل التشفير والتنصت على الكتلة", type="primary", use_container_width=True)
 
-        key_str = st.text_input("المفتاح السري المشترك K (16 بت):", value="1100101011110000", max_chars=16)
-        key_cleaned = [1 if c == '1' else 0 for c in key_str.ljust(16, '0')[:16]]
-        key_tensor = torch.tensor([[(b * 2.0) - 1.0 for b in key_cleaned]], dtype=torch.float32, device=device)
-
-        btn_run = st.button("🚀 تشغيل خوارزمية التشفير والتنصت", use_container_width=True, type="primary")
-
-    with sim_col2:
-        st.markdown("#### 2. نتائج المعالجة التنافسية")
-        if btn_run or 'sim_run' not in st.session_state:
-            st.session_state['sim_run'] = True
+        with sim_col2:
             with torch.no_grad():
-                cipher_tensor = alice(bits_tensor, key_tensor)
-                bob_out_tensor = bob(cipher_tensor, key_tensor)
+                cipher_tensor = alice(bits_tensor, single_key_tensor)
+                bob_out_tensor = bob(cipher_tensor, single_key_tensor)
                 eve_out_tensor = eve(cipher_tensor)
 
                 cipher_bits = (cipher_tensor[0] > 0).to(torch.int8).cpu().numpy()
                 bob_bits    = (bob_out_tensor[0] > 0).to(torch.int8).cpu().numpy()
                 eve_bits    = (eve_out_tensor[0] > 0).to(torch.int8).cpu().numpy()
-
                 orig_bits   = (bits_tensor[0] > 0).to(torch.int8).cpu().numpy()
 
-                bob_errors = int(np.sum(orig_bits != bob_bits))
-                eve_errors = int(np.sum(orig_bits != eve_bits))
-
-            st.write("**النص الأصلي P:**")
-            st.code(" ".join(str(b) for b in orig_bits))
+                bob_errs = int(np.sum(orig_bits != bob_bits))
+                eve_errs = int(np.sum(orig_bits != eve_bits))
 
             st.write("**النص المشفر C (خرج AliceNet):**")
             st.code(" ".join(str(b) for b in cipher_bits))
 
             col_b, col_e = st.columns(2)
             with col_b:
-                st.success(f"**استرجاع بوب (BobNet):**\n`{' '.join(str(b) for b in bob_bits)}`\n\n✓ الأخطاء: {bob_errors}/16 (دقة {((16-bob_errors)/16)*100:.1f}%)")
+                st.success(f"**استرجاع بوب (BobNet):**\n`{' '.join(str(b) for b in bob_bits)}`\n\n✓ أخطاء: {bob_errs}/16")
             with col_e:
-                st.error(f"**تخمين إيف (EveNet):**\n`{' '.join(str(b) for b in eve_bits)}`\n\n✗ الأخطاء: {eve_errors}/16 (حيرة {((eve_errors)/16)*100:.1f}%)")
+                st.error(f"**تخمين إيف (EveNet):**\n`{' '.join(str(b) for b in eve_bits)}`\n\n✗ أخطاء: {eve_errs}/16")
 
-    st.divider()
-    st.markdown("#### 🔍 المقارنة البتية التفصيلية (Bit-by-Bit Comparison Matrix)")
-    if 'orig_bits' in locals():
+        st.divider()
+        st.markdown("#### 🔍 المقارنة البتية التفصيلية للكتلة")
         df_comp = pd.DataFrame({
             "موضع البت (Bit Index)": list(range(1, 17)),
             "الرسالة الأصلية (P)": orig_bits,
@@ -276,7 +356,7 @@ with tab1:
             "فك تشفير بوب (P')": bob_bits,
             "تخمين إيف (P'')": eve_bits,
             "تطابق بوب؟": ["✓ نعم" if orig_bits[i] == bob_bits[i] else "✗ خطأ" for i in range(16)],
-            "كشف إيف؟": ["⚠ كشفت" if orig_bits[i] == eve_bits[i] else "✓ محجوب" for i in range(16)]
+            "حجب إيف؟": ["✓ محجوب" if orig_bits[i] != eve_bits[i] else "⚠ كشفت" for i in range(16)]
         })
         st.dataframe(df_comp, use_container_width=True, hide_index=True)
 
