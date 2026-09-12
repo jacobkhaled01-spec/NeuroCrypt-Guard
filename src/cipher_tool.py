@@ -3,7 +3,7 @@
 """
 cipher_tool.py
 أداة التشفير وفك التشفير العملياتية للملفات الحقيقية لمنظومة NeuroCrypt-Guard v2.2
-Operational Cryptographic File Utility with Information Reconciliation (Hamming SEC)
+Operational Cryptographic File Utility with Chunked Streaming & Information Reconciliation
 
 المراجع العلمية المعتمدة (APA 7th Edition):
 - Abadi, M., & Andersen, D. G. (2016). Learning to protect communications with
@@ -31,11 +31,12 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.models import AliceNet, BobNet, EveNet, DEFAULT_MESSAGE_SIZE
 
-# الثوابت التشفيرية المعيارية (No Magic Numbers)
+# الثوابت التشفيرية والمعمارية (No Magic Numbers)
 NCG_MAGIC_V2: bytes = b"NCG\x02"  # بصمة ترويسة ملفات NeuroCrypt-Guard v2.2
 HEADER_LENGTH_BYTES: int = 4
 BLOCK_SIZE_BITS: int = DEFAULT_MESSAGE_SIZE  # 16 بت (2 بايت)
 PARITY_BITS_COUNT: int = 5  # 2^5 = 32 >= 16 + 5 + 1
+CHUNK_BLOCKS: int = 4096  # حجم دفعة المعالجة التدفقية (4096 كتلة = 8 كيلوبايت) لتفادي استهلاك ذاكرة VRAM
 
 
 def build_hamming_matrix() -> np.ndarray:
@@ -79,11 +80,14 @@ def encrypt_file(
     device: torch.device
 ) -> Tuple[str, str, float, float]:
     """
-    تشفير ملف حقيقي فعلي وتوليد ملف مشفر ثنائي متكامل (.ncg) مدعوم بالتوفيق التشفيري.
-    Encrypts a real file using AliceNet + Float16 Latents + Hamming Reconciliation Layer.
+    تشفير ملف حقيقي فعلي بنظام الدفعات التدفقية (Chunked Streaming) لتفادي نفاد VRAM.
+    Encrypts a real file using chunked AliceNet passes + Float16 Latents + Hamming Parity.
     """
     if not input_path.exists():
         raise FileNotFoundError(f"الملف المطلوب غير موجود: {input_path}")
+
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
 
     raw_data = input_path.read_bytes()
     orig_len = len(raw_data)
@@ -97,43 +101,44 @@ def encrypt_file(
     alice.load_state_dict(torch.load(alice_path, map_location=device, weights_only=True))
     alice.eval()
 
-    key_tensor = parse_key_bits(key_str).to(device)
+    key_tensor = parse_key_bits(key_str)
 
-    # 2. تقسيم الملف إلى كتل بحجم 16 بت
+    # 2. تقسيم سريع عبر NumPy لتفادي استهلاك الرام
     padded_data = raw_data if orig_len % 2 == 0 else raw_data + b'\x00'
     num_blocks = len(padded_data) // 2
 
-    blocks = []
-    for i in range(num_blocks):
-        b1 = padded_data[2 * i]
-        b2 = padded_data[2 * i + 1]
-        val16 = (b1 << 8) | b2
-        bits = [(val16 >> (15 - b)) & 1 for b in range(16)]
-        blocks.append([(b * 2.0) - 1.0 for b in bits])
-
-    t_blocks = torch.tensor(blocks, dtype=torch.float32, device=device)
-    t_keys = key_tensor.repeat(num_blocks, 1)
+    arr16 = np.frombuffer(padded_data, dtype='>u2')
+    bits_matrix = ((arr16[:, None] >> np.arange(15, -1, -1, dtype=np.uint16)) & 1).astype(np.uint8)
 
     # 3. حساب متلازمة التكافؤ عبر مصفوفة هامنغ لضمان التوفيق التام
-    m_bits = (t_blocks > 0).cpu().numpy().astype(np.uint8)  # (num_blocks, 16)
-    parity_matrix = (HAMMING_H @ m_bits.T) % 2  # (5, num_blocks)
+    parity_matrix = (HAMMING_H @ bits_matrix.T) % 2  # (5, num_blocks)
+    weights = (1 << np.arange(PARITY_BITS_COUNT, dtype=np.uint8))[:, None]
+    parity_bytes = np.sum(parity_matrix * weights, axis=0, dtype=np.uint8).tobytes()
 
-    parity_bytes = bytearray()
-    for col in range(num_blocks):
-        p_val = 0
-        for bit_idx in range(PARITY_BITS_COUNT):
-            p_val |= (int(parity_matrix[bit_idx, col]) << bit_idx)
-        parity_bytes.append(p_val)
-
-    # 4. التشفير عبر التمرير الأمامي لأليس
+    # 4. التشفير عبر دفعات تدفقية (Chunked Execution) لتفادي استهلاك كرت الشاشة
     t0 = time.perf_counter()
-    with torch.no_grad():
-        ciphers = alice(t_blocks, t_keys)
-        # تحويل المتجهات التناظرية إلى دقة نصفية float16 (2 بايت لكل بعد)
-        ciphers_fp16 = ciphers.half().cpu().numpy()
-        if device.type == "cuda":
-            torch.cuda.synchronize()
+    ciphers_list = []
+    t_blocks_cpu = torch.from_numpy((bits_matrix.astype(np.float32) * 2.0) - 1.0)
+
+    for start_idx in range(0, num_blocks, CHUNK_BLOCKS):
+        end_idx = min(start_idx + CHUNK_BLOCKS, num_blocks)
+        curr_bs = end_idx - start_idx
+        chunk_b = t_blocks_cpu[start_idx:end_idx].to(device)
+        chunk_k = key_tensor.repeat(curr_bs, 1).to(device)
+
+        with torch.no_grad():
+            c = alice(chunk_b, chunk_k)
+            ciphers_list.append(c.half().cpu())
+
+        del chunk_b, chunk_k, c
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+        torch.cuda.empty_cache()
+
     t1 = time.perf_counter()
+
+    ciphers_fp16 = torch.cat(ciphers_list, dim=0).numpy()
 
     # 5. تجميع الحزمة التشفيرية الرسمية (.ncg)
     # الهيكل: [NCG\x02 (4B)] + [orig_len (4B)] + [num_blocks (4B)] + [Parity (num_blocks B)] + [Ciphertext (num_blocks * 32 B)]
@@ -142,7 +147,7 @@ def encrypt_file(
         orig_len.to_bytes(HEADER_LENGTH_BYTES, byteorder='big') +
         num_blocks.to_bytes(HEADER_LENGTH_BYTES, byteorder='big')
     )
-    final_payload = header + bytes(parity_bytes) + ciphers_fp16.tobytes()
+    final_payload = header + parity_bytes + ciphers_fp16.tobytes()
     output_path.write_bytes(final_payload)
     enc_hash = compute_sha256(final_payload)
 
@@ -169,11 +174,14 @@ def decrypt_file(
     device: torch.device
 ) -> Tuple[str, bool, float, float]:
     """
-    فك تشفير ملف مشفر فعلي واستعادته بنسبة 100% عبر BobNet وطبقة التوفيق التشفيري.
-    Decrypts a real .ncg file using BobNet and verifies bit-exact SHA-256 integrity.
+    فك تشفير ملف مشفر فعلي واستعادته بنسبة 100% عبر BobNet وطبقة التوفيق التشفيري بالدفعات التدفقية.
+    Decrypts a real .ncg file using chunked BobNet passes and verifies bit-exact SHA-256 integrity.
     """
     if not input_path.exists():
         raise FileNotFoundError(f"الملف المشفر غير موجود: {input_path}")
+
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
 
     encrypted_data = input_path.read_bytes()
     if not encrypted_data.startswith(NCG_MAGIC_V2):
@@ -202,22 +210,34 @@ def decrypt_file(
     bob.load_state_dict(torch.load(bob_path, map_location=device, weights_only=True))
     bob.eval()
 
-    key_tensor = parse_key_bits(key_str).to(device)
+    key_tensor = parse_key_bits(key_str)
 
     # 2. استرجاع مصفوفة المتجهات النصية المشفرة بدقة float16
     ciphers_np = np.frombuffer(raw_cipher_bytes, dtype=np.float16).reshape((num_blocks, BLOCK_SIZE_BITS))
-    t_ciphers = torch.tensor(ciphers_np, dtype=torch.float32, device=device)
-    t_keys = key_tensor.repeat(num_blocks, 1)
 
-    # 3. فك التشفير العصبي الأولي عبر بوب
+    # 3. فك التشفير العصبي بالدفعات التدفقية (Chunked Execution)
     t0 = time.perf_counter()
-    with torch.no_grad():
-        decrypted = bob(t_ciphers, t_keys)
-        if device.type == "cuda":
-            torch.cuda.synchronize()
+    d_bits_list = []
+
+    for start_idx in range(0, num_blocks, CHUNK_BLOCKS):
+        end_idx = min(start_idx + CHUNK_BLOCKS, num_blocks)
+        curr_bs = end_idx - start_idx
+        chunk_c = torch.tensor(ciphers_np[start_idx:end_idx], dtype=torch.float32, device=device)
+        chunk_k = key_tensor.repeat(curr_bs, 1).to(device)
+
+        with torch.no_grad():
+            d = bob(chunk_c, chunk_k)
+            d_bits_list.append((d > 0).to(torch.uint8).cpu())
+
+        del chunk_c, chunk_k, d
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+        torch.cuda.empty_cache()
+
     t1 = time.perf_counter()
 
-    d_bits = (decrypted > 0).cpu().numpy().astype(np.uint8)  # (num_blocks, 16)
+    d_bits = torch.cat(d_bits_list, dim=0).numpy()  # (num_blocks, 16)
 
     # 4. استخراج متلازمة التكافؤ المرجعية
     target_parity = np.zeros((PARITY_BITS_COUNT, num_blocks), dtype=np.uint8)
@@ -235,22 +255,17 @@ def decrypt_file(
     for col in range(num_blocks):
         s = syndrome[:, col]
         if np.any(s):
-            # البحث عن العمود المطابق في مصفوفة H
             for col_idx in range(BLOCK_SIZE_BITS):
                 if np.array_equal(HAMMING_H[:, col_idx], s):
                     corrected_bits[col, col_idx] ^= 1
                     errors_corrected += 1
                     break
 
-    # 6. إعادة تركيب البايتات الأصلية
-    recovered_bytes = bytearray()
-    for row in range(num_blocks):
-        val16 = 0
-        for b in range(16):
-            val16 = (val16 << 1) | int(corrected_bits[row, b])
-        recovered_bytes.extend([(val16 >> 8) & 0xFF, val16 & 0xFF])
+    # 6. إعادة تركيب البايتات الأصلية بسرعة فائقة عبر NumPy
+    powers = (1 << np.arange(15, -1, -1, dtype=np.uint16))[None, :]
+    val16 = np.sum(corrected_bits.astype(np.uint16) * powers, axis=1, dtype=np.uint16)
+    final_data = val16.astype('>u2').tobytes()[:orig_len]
 
-    final_data = bytes(recovered_bytes[:orig_len])
     output_path.write_bytes(final_data)
     rec_hash = compute_sha256(final_data)
 
@@ -275,11 +290,14 @@ def eve_attack_file(
     device: torch.device
 ) -> Tuple[str, float, float]:
     """
-    محاولة اعتراض وفك تشفير معادية عبر EveNet بدون امتلاك المفتاح السري.
+    محاولة اعتراض وفك تشفير معادية عبر EveNet بدون امتلاك المفتاح السري بالدفعات التدفقية.
     Adversarial blind decryption attempt demonstrating cryptographic failure and Shannon secrecy.
     """
     if not input_path.exists():
         raise FileNotFoundError(f"الملف المشفر غير موجود: {input_path}")
+
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
 
     encrypted_data = input_path.read_bytes()
     header_offset = len(NCG_MAGIC_V2)
@@ -297,25 +315,32 @@ def eve_attack_file(
     eve.eval()
 
     ciphers_np = np.frombuffer(raw_cipher_bytes, dtype=np.float16).reshape((num_blocks, BLOCK_SIZE_BITS))
-    t_ciphers = torch.tensor(ciphers_np, dtype=torch.float32, device=device)
 
     t0 = time.perf_counter()
-    with torch.no_grad():
-        eve_out = eve(t_ciphers)
-        if device.type == "cuda":
-            torch.cuda.synchronize()
+    e_bits_list = []
+
+    for start_idx in range(0, num_blocks, CHUNK_BLOCKS):
+        end_idx = min(start_idx + CHUNK_BLOCKS, num_blocks)
+        chunk_c = torch.tensor(ciphers_np[start_idx:end_idx], dtype=torch.float32, device=device)
+
+        with torch.no_grad():
+            eve_out = eve(chunk_c)
+            e_bits_list.append((eve_out > 0).to(torch.uint8).cpu())
+
+        del chunk_c, eve_out
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+        torch.cuda.empty_cache()
+
     t1 = time.perf_counter()
 
-    e_bits = (eve_out > 0).cpu().numpy().astype(np.uint8)
+    e_bits = torch.cat(e_bits_list, dim=0).numpy()
 
-    scrambled_bytes = bytearray()
-    for row in range(num_blocks):
-        val16 = 0
-        for b in range(16):
-            val16 = (val16 << 1) | int(e_bits[row, b])
-        scrambled_bytes.extend([(val16 >> 8) & 0xFF, val16 & 0xFF])
+    powers = (1 << np.arange(15, -1, -1, dtype=np.uint16))[None, :]
+    val16 = np.sum(e_bits.astype(np.uint16) * powers, axis=1, dtype=np.uint16)
+    corrupted_data = val16.astype('>u2').tobytes()[:orig_len]
 
-    corrupted_data = bytes(scrambled_bytes[:orig_len])
     output_path.write_bytes(corrupted_data)
     eve_hash = compute_sha256(corrupted_data)
     elapsed = t1 - t0
