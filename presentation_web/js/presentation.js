@@ -28,7 +28,7 @@ const PresentationApp = (function () {
   function initEmbeddedEngines() {
     const N3D = window.Neural3D || (typeof Neural3D !== "undefined" ? Neural3D : null);
     const container3D = document.getElementById("three-canvas-container");
-    if (container3D && N3D && !container3D.hasChildNodes()) {
+    if (container3D && N3D && !container3D.querySelector("canvas")) {
       try {
         N3D.init(container3D);
       } catch (e) {
